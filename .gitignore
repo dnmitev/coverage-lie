@@ -1,0 +1,8 @@
+node_modules/
+coverage/
+reports/
+.stryker-tmp/
+dist/
+.DS_Store
+# private ideation notes
+projects/
