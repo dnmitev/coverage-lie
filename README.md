@@ -1,8 +1,10 @@
 # The 100% Code Coverage Lie
 
+[![Mutation score](https://img.shields.io/endpoint?url=https://dnmitev.github.io/coverage-lie/mutation/badge.json)](https://dnmitev.github.io/coverage-lie/mutation/)
+
 Finding hidden bugs with mutation testing. Talk + demo for [DEV.BG JavaScript](https://dev.bg/groups/javascript/), 28.01.2027.
 
-**Slides:** https://dnmitev.github.io/coverage-lie/
+**Slides:** https://dnmitev.github.io/coverage-lie/ · **Live mutation report (main):** https://dnmitev.github.io/coverage-lie/mutation/
 
 > Coverage tells you which code **ran**. Mutation testing tells you which code is **checked**.
 
@@ -58,11 +60,31 @@ Is the native checker faster? Depends on mutant count, see `demo/bench/RESULTS.m
 | Workflow | What |
 |---|---|
 | `.github/workflows/tests.yml` | typecheck + tests + 100% coverage gate |
-| `.github/workflows/mutation-pr.yml` | incremental Stryker run on PRs, baseline from `main`, score in job summary, HTML report + agent prompt as artifact, fails under `thresholds.break` or on a new `Stryker disable` comment without a reason |
-| `.github/workflows/mutation-main.yml` | refreshes the baseline on `main`, nightly full run (`--force`) |
-| `.github/workflows/bench.yml` | manual: run the checker benchmark on a GitHub-hosted runner |
-| `ci-samples/score-summary.mjs` | mutation score markdown from Stryker's JSON report |
-| `ci-samples/survivors-to-prompt.mjs` | surviving mutants as a prompt for a coding agent ("write tests that kill these") |
+| `.github/workflows/mutation-pr.yml` | incremental Stryker run on PRs, sticky PR comment, inline annotations, gates (see below) |
+| `.github/workflows/mutation-main.yml` | full run on `main` + nightly (`--force`), refreshes the incremental cache and the baseline JSON for PRs |
+| `.github/workflows/pages.yml` | slides + live HTML mutation report + badge on GitHub Pages |
+| `.github/workflows/bench.yml` | manual: checker benchmark on a GitHub-hosted runner |
+| `ci-samples/report.mjs` | Markdown report, annotations, badge and gates from Stryker's JSON report |
+| `ci-samples/survivors-to-prompt.mjs` | surviving mutants as a prompt for a coding agent |
+
+### What a PR gets
+
+- **Sticky comment** (updated on every push): mutation score, change vs `main`, score on **the lines this PR changed**, per-file table, every surviving mutant as a diff.
+- **Inline annotations** on the "Files changed" tab, on the exact line of each surviving mutant.
+- **Artifact** with the HTML report and a ready-made agent prompt.
+- **Gates**, all evaluated after the report is posted:
+  - overall score below `thresholds.break` (Stryker itself)
+  - score on changed lines below 80% (new code gets a higher bar than the legacy average)
+  - a new `Stryker disable` comment without a reason
+
+### Demo pull requests (do not merge)
+
+| PR | Story | Result |
+|---|---|---|
+| Demo: weak tests | the step-2 tests come back | ✅ tests, 100% coverage · ❌ mutation score 45.71% < break |
+| Demo: bulk discount, agent-written tests | new feature, tests that only check "less than" / "greater than" | ✅ overall 93% · ❌ changed lines 70% < 80% |
+| Demo: bulk discount, silenced | the agent "fixes" the gate with `Stryker disable` comments | "100%" · ❌ disable comments without a reason |
+| Demo: bulk discount | same feature, exact values and boundaries | ✅ 100% on changed lines |
 
 ## Mutation testing for agent-written tests
 
