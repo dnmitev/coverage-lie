@@ -250,9 +250,10 @@ Mutators simulate real mistakes: off-by-one, wrong boolean operator, removed blo
 layout: center
 ---
 
-# Quiz: spot the survivor 🧟
+# Quiz: which bug slips through? 🧟
 
 ```ts
+// rule: you must be 18 or older
 const canBuyBeer = (age: number) => age >= 18;
 
 it('checks age', () => {
@@ -261,21 +262,30 @@ it('checks age', () => {
 });
 ```
 
-<div class="grid grid-cols-4 gap-4 mt-6 text-xl font-mono">
+<div class="muted mt-4">Stryker breaks <code>age &gt;= 18</code> in four ways:</div>
+
+<div class="grid grid-cols-4 gap-4 mt-2 text-xl font-mono">
   <div>A <code>age &gt; 18</code></div>
   <div>B <code>age &lt; 18</code></div>
   <div>C <code>true</code></div>
   <div>D <code>false</code></div>
 </div>
 
-<div class="muted mt-4">💬 which mutant survives? A, B, C or D in the chat</div>
+<div class="mt-4 text-lg">💬 Which bug would these tests <strong>NOT</strong> catch? A, B, C or D in the chat</div>
 
-<div v-click class="text-4xl font-extrabold mt-4">A. nobody tested 18.</div>
+<div v-click class="text-3xl font-extrabold mt-4">A. it's wrong only for age 18, and no test checks 18.</div>
 
 <!--
 ⏱ 1:30
-Give them 20-30 seconds, Zoom chat is slow. Read a few answers. Then reveal: B fails for 30, C fails for 5, D fails for 30. A survives because no test uses exactly 18. 100% coverage, and an 18-year-old can't buy a beer.
-This is the whole talk in one slide; the demo is the same bug with free shipping.
+All four options are BROKEN versions of the code (mutants). The question is which broken version the tests fail to notice. Say that explicitly before they answer: "every option is a bug; which bug gets past these two tests?"
+Give them 20-30 seconds, Zoom chat is slow. Read a few answers. Then reveal and walk through:
+- B (age < 18): 30 gives false, test expects true → test fails → bug caught ("killed").
+- C (true): 5 gives true, test expects false → caught.
+- D (false): 30 gives false → caught.
+- A (age > 18): 30 → true, 5 → false. Same answers as the correct code, all tests pass, bug not caught: it "survived". The only age where > and >= differ is exactly 18, and nobody tested 18. 100% coverage, and an 18-year-old can't buy a beer.
+Vocabulary to land: killed = the tests caught the bug (good). Survived = the bug got through (bad, for your tests).
+Fix: expect(canBuyBeer(18)).toBe(true). Correct code passes, mutant A fails → killed.
+This is the whole talk in one slide; the demo is the same bug with free shipping at exactly 100.
 -->
 ---
 layout: center
