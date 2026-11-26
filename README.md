@@ -1,0 +1,75 @@
+# The 100% Code Coverage Lie
+
+Finding hidden bugs with mutation testing. Talk + demo for [DEV.BG JavaScript](https://dev.bg/groups/javascript/), 28.01.2027.
+
+**Slides:** https://dnmitev.github.io/coverage-lie/
+
+> Coverage tells you which code **ran**. Mutation testing tells you which code is **checked**.
+
+## Try it on your project (≈ 5 minutes)
+
+```bash
+npm init stryker@latest   # answers: your test runner, TypeScript checker if you use TS
+npx stryker run
+open reports/mutation/mutation.html
+```
+
+Start with one module that matters, read the survivors, fix three of them. Then put it in CI (see below).
+
+## The demo
+
+`demo/` is a tiny shopping-cart pricing module (TypeScript 7, Vitest 5, StrykerJS 10).
+Every step of the talk is a git tag:
+
+| Tag | What happens | Coverage | Mutation score |
+|---|---|---|---|
+| `step-1-green` | weak tests, everything green | 100% | – |
+| `step-2-reveal` | add Stryker | 100% | **58.00%** (21 survivors) |
+| `step-3-kill` | real assertions + boundary tests; finds an off-by-one bug; one equivalent mutant ignored with a reason | 100% | **100.00%** |
+| `step-4-fast` | incremental mode, TypeScript 7 native checker, `ignoreStatic` | 100% | 100.00% |
+| `step-5-ci` | thresholds + GitHub Actions | 100% | 100.00% |
+
+```bash
+git checkout step-2-reveal
+cd demo && npm ci
+npm run coverage      # 100%
+npx stryker run       # 58%
+```
+
+`demo/scripts/RECORDING.md` has the step-by-step script used for the demo videos.
+
+### TypeScript 7 note
+
+TypeScript 7 (the native compiler) ships no classic JS API, but Stryker core and `@stryker-mutator/typescript-checker` still import it.
+Without a workaround you get `ts.parseConfigFileTextToJson is not a function`. The demo uses:
+
+```json
+"typescript": "6.0.3",
+"@typescript/native": "npm:typescript@7.0.2"
+```
+
+`typescript` (6) is only the API for tooling; `@typescript/native` (7) does the real type checking,
+both in `npm run typecheck` and in Stryker via `"typescriptChecker": { "experimentalNativePreview": true }`.
+
+Is the native checker faster? Depends on mutant count, see `demo/bench/RESULTS.md`.
+
+## CI samples
+
+| Workflow | What |
+|---|---|
+| `.github/workflows/tests.yml` | typecheck + tests + 100% coverage gate |
+| `.github/workflows/mutation-pr.yml` | incremental Stryker run on PRs, baseline from `main`, score in job summary, HTML report artifact, fails under `thresholds.break` |
+| `.github/workflows/mutation-main.yml` | refreshes the baseline on `main`, nightly full run (`--force`) |
+| `ci-samples/score-summary.mjs` | mutation score markdown from Stryker's JSON report |
+
+## Slides
+
+```bash
+cd slides && npm ci && npm run dev
+```
+
+Slidev, DEV.BG branding. Meme templates go in `slides/public/memes/` (list in the README there), demo videos in `slides/public/videos/`.
+
+## License
+
+MIT

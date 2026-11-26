@@ -1,0 +1,69 @@
+/* DEV.BG brand, taken from the official JavaScript.pptx template. */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap');
+
+:root {
+  --brand-blue: #374efd;
+  --brand-blue-dark: #3844c6;
+  --brand-mint: #69f1ae;
+  --brand-grey: #4f4f4f;
+  --slidev-theme-primary: var(--brand-mint);
+}
+
+.slidev-layout {
+  font-family: 'Montserrat', Arial, sans-serif;
+  color: white;
+  background: url('/brand/gradient.png') center / cover no-repeat, var(--brand-blue);
+  padding-bottom: 3.5rem; /* room for the footer strip */
+}
+
+.slidev-layout h1,
+.slidev-layout h2 {
+  font-weight: 800;
+  color: var(--brand-mint);
+  letter-spacing: -0.02em;
+}
+
+.slidev-layout h1 {
+  font-size: 2.8rem;
+  line-height: 1.1;
+}
+
+.slidev-layout strong,
+.slidev-layout em {
+  color: var(--brand-mint);
+  font-style: normal;
+}
+
+.slidev-layout a {
+  color: var(--brand-mint);
+}
+
+/* Big single-statement slides. */
+.slidev-layout .big {
+  font-size: 4.2rem;
+  font-weight: 800;
+  line-height: 1.05;
+}
+
+.slidev-layout .huge {
+  font-size: 7rem;
+  white-space: nowrap;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--brand-mint);
+}
+
+.slidev-layout .muted {
+  opacity: 0.7;
+}
+
+.slidev-layout pre,
+.slidev-layout .shiki {
+  font-size: 0.95rem !important;
+  border-radius: 8px;
+}
+
+/* Cover slide: bigger title, like the pptx title layout. */
+.slidev-layout.cover h1 {
+  font-size: 3.6rem;
+}
