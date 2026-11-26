@@ -16,10 +16,34 @@ class: cover
 
 ## Finding hidden bugs with mutation testing
 
-<div class="muted mt-10">Dimitar Mitev · <!-- TODO: position / company --></div>
+<div class="muted mt-10">Dimitar Mitev</div>
+
+---
+layout: center
+---
+
+<div class="grid grid-cols-[auto_1fr] gap-12 items-center">
+
+<img src="/brand/speaker.jpg" alt="Dimitar Mitev" class="w-64 h-64 rounded-full border-4 border-[var(--brand-mint)] object-cover" />
+
+<div>
+
+# Dimitar Mitev
+
+<div class="text-xl mt-2"><!-- TODO: position / company --></div>
+
+<div class="muted mt-6 text-lg">writes tests. sometimes they even assert something.</div>
+
+<div class="mt-8 text-base">
+
+[linkedin.com/in/dimitar-mitev-3017437a](https://www.linkedin.com/in/dimitar-mitev-3017437a/) · [github.com/dnmitev](https://github.com/dnmitev)
+
+</div>
+</div>
+</div>
 
 <!--
-Hook: ask the room. "Hands up if your project has a coverage gate in CI." Keep hands up if it's above 80. Above 90. Anyone at 100? Great, this talk is about you.
+30 seconds max. Who I am, why I care: I've shipped bugs on 100% covered lines too.
 -->
 
 ---
@@ -31,7 +55,8 @@ layout: center
 <div class="muted mt-6">keep your hand up if it's ≥ 80%</div>
 
 <!--
-Count hands. Joke: "The rest of you, I envy your honesty."
+Hook: "Hands up if your project has a coverage gate in CI." Keep hands up if it's above 80. Above 90. Anyone at 100? Great, this talk is about you.
+Joke for the people who put their hands down: "The rest of you, I envy your honesty."
 -->
 
 ---
@@ -543,14 +568,35 @@ layout: center
 npm init stryker@latest
 ```
 
-<div class="mt-8">
+<!--
+One command, answers a few questions (test runner, checker), writes the config. Then npx stryker run.
+-->
+
+---
+layout: center
+---
+
+<div class="grid grid-cols-[auto_1fr] gap-12 items-center">
+
+<img src="/brand/repo-qr.svg" alt="QR code: github.com/dnmitev/coverage-lie" class="w-72 h-72 rounded-lg" />
+
+<div>
+
+# Grab the repo
+
+<div class="text-2xl mt-4">
 
 **github.com/dnmitev/coverage-lie**
 
 </div>
 
+<div class="muted mt-6 text-lg">demo with every step tagged · CI workflows · these slides</div>
+
+</div>
+</div>
+
 <!--
-TODO: add a QR code to the repo.
+Leave this up for a few seconds, people need time to scan.
 -->
 
 ---
@@ -559,4 +605,14 @@ layout: end
 
 # Questions?
 
-<div class="muted mt-6">github.com/dnmitev · <!-- TODO: LinkedIn --></div>
+<div class="flex gap-10 items-center justify-center mt-8">
+
+<img src="/brand/repo-qr.svg" alt="QR code: github.com/dnmitev/coverage-lie" class="w-36 h-36 rounded-lg" />
+
+<div class="text-left text-lg leading-loose">
+
+[github.com/dnmitev/coverage-lie](https://github.com/dnmitev/coverage-lie)<br />
+[linkedin.com/in/dimitar-mitev-3017437a](https://www.linkedin.com/in/dimitar-mitev-3017437a/)
+
+</div>
+</div>
