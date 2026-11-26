@@ -2,5 +2,13 @@
   "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
   "testRunner": "vitest",
   "mutate": ["src/**/*.ts"],
-  "reporters": ["clear-text", "html", "progress"]
+  "reporters": ["clear-text", "html", "progress"],
+
+  "checkers": ["typescript"],
+  "tsconfigFile": "tsconfig.json",
+  "typescriptChecker": { "experimentalNativePreview": true },
+
+  "incremental": true,
+  "ignoreStatic": true,
+  "concurrency": 4
 }
