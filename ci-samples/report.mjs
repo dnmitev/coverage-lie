@@ -1,6 +1,8 @@
 // Mutation testing report for CI, built from Stryker's JSON report.
 //
-//   node report.mjs reports/mutation/mutation.json [options]
+//   node report.mjs reports/mutation/mutation.json [more reports...] [options]
+//
+// Several reports (e.g. a fast main run + a strict run for schema files) are merged by file.
 //
 //   --config <file>        stryker.config.json, for thresholds (default: ./stryker.config.json)
 //   --baseline <file>      mutation.json from main, to show the score change
@@ -31,7 +33,8 @@ const { values: opt, positionals } = parseArgs({
   },
 });
 
-const report = readJson(positionals[0]);
+// Missing extra reports are skipped, so workflows can pass optional ones unconditionally.
+const report = { files: Object.assign({}, ...positionals.filter((f, i) => i === 0 || existsSync(f)).map((f) => readJson(f).files)) };
 const baseline = opt.baseline && existsSync(opt.baseline) ? readJson(opt.baseline) : undefined;
 const thresholds = { high: 80, low: 60, break: null, ...(existsSync(opt.config) ? readJson(opt.config).thresholds : {}) };
 const diff = opt.base ? diffSince(opt.base) : undefined;
