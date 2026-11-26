@@ -38,7 +38,7 @@ Count hands. Joke: "The rest of you, I envy your honesty."
 layout: center
 ---
 
-<Meme src="this-is-fine.jpg" top="coverage: 100%" bottom="prod: 🔥" width="26rem" />
+<Meme src="this-is-fine.jpg" top="coverage: 100%" bottom="prod: on fire" width="40rem" />
 
 <!--
 Agenda point 1: the green-report illusion.
@@ -80,7 +80,11 @@ Agenda point 2. This is a real test from the demo repo. It executes every line o
 layout: center
 ---
 
-<Meme src="is-this-a-pigeon.jpg" top="calling a function" bottom="is this a test?" width="26rem" />
+<Meme src="is-this-a-pigeon.jpg" width="28rem" :labels="[
+  { text: 'coverage tool', x: 2, y: 64, w: 36, size: '1.6rem' },
+  { text: 'checkout(items)', x: 56, y: 34, w: 44, size: '1.4rem' },
+  { text: 'Is this a test?', x: 5, y: 84, w: 90, size: '2.2rem' },
+]" />
 
 <!--
 Calling code is not testing code. A test is an assertion about behaviour.
@@ -248,7 +252,9 @@ Coverage: 100%. Mutation score: 58.00%. 21 of 50 mutants survived. Let that sink
 layout: center
 ---
 
-<Meme src="surprised-pikachu.jpg" top="writes tests to hit 100% coverage" bottom="mutation score: 58%" width="24rem" />
+<Meme src="surprised-pikachu.jpg" width="22rem" :labels="[
+  { text: 'Me: writes tests until coverage hits 100%\nStryker: 58%', x: 4, y: 8, w: 92, size: '1.25rem', dark: true },
+]" />
 
 ---
 layout: center
@@ -307,14 +313,23 @@ layout: center
 
 # Equivalent mutants
 
+<div class="grid grid-cols-[3fr_2fr] gap-6 items-center">
+
 ```ts
-if (coupon.value >= amount) {   // mutant: coupon.value > amount
+if (coupon.value >= amount) {
+  // mutant: coupon.value > amount
   return 0;
 }
-return roundMoney(amount - coupon.value);  // amount - amount = 0 anyway
+// amount - amount = 0 anyway
+return roundMoney(amount - coupon.value);
 ```
 
-<Meme src="they-are-the-same.jpg" top="" bottom="" width="14rem" />
+<Meme src="they-are-the-same.jpg" width="17rem" :labels="[
+  { text: 'value >= amount', x: 6, y: 15, w: 40, size: '0.85rem', dark: true },
+  { text: 'value > amount', x: 52, y: 20, w: 40, size: '0.85rem', dark: true },
+]" />
+
+</div>
 
 <!--
 An equivalent mutant changes the code but not the behaviour. No test can ever kill it. When value === amount both paths return 0.
@@ -344,7 +359,7 @@ layout: center
 layout: center
 ---
 
-<Meme src="one-does-not-simply.jpg" top="one does not simply" bottom="run all mutants on every PR" width="26rem" />
+<Meme src="one-does-not-simply.jpg" top="one does not simply" bottom="run all mutants on every PR" width="38rem" />
 
 <!--
 Cost: every mutant can mean a test run. 5,000 mutants × a 2 minute suite is your weekend.
@@ -495,12 +510,10 @@ Video: PR workflow, incremental baseline from main via actions/cache, score in j
 layout: center
 ---
 
-<Meme src="drake.jpg" top="" bottom="" width="20rem" />
-
-<div class="grid grid-cols-2 gap-4 mt-4 text-xl">
-  <div>❌ coverage: 100%</div>
-  <div>✅ mutation score: 80%</div>
-</div>
+<Meme src="drake.jpg" width="24rem" :labels="[
+  { text: 'coverage: 100%', x: 52, y: 20, w: 46, size: '1.5rem', dark: true },
+  { text: 'mutation score: 80%', x: 52, y: 70, w: 46, size: '1.5rem', dark: true },
+]" />
 
 ---
 layout: center

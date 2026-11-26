@@ -3,7 +3,9 @@ import { ref } from 'vue';
 
 // Classic top/bottom caption meme. Captions live in slides.md, only blank templates go in public/memes.
 // If the template image is missing, a placeholder shows which file to add (see public/memes/README.md).
-const props = defineProps<{ src: string; top?: string; bottom?: string; width?: string }>();
+// `labels` places text inside panels: x/y/w are % of the image, `dark` = black text for white areas.
+interface Label { text: string; x: number; y: number; w?: number; size?: string; dark?: boolean }
+const props = defineProps<{ src: string; top?: string; bottom?: string; width?: string; labels?: Label[] }>();
 const missing = ref(false);
 const base = import.meta.env.BASE_URL;
 </script>
@@ -14,6 +16,14 @@ const base = import.meta.env.BASE_URL;
     <div v-else class="meme-missing">missing meme template: <code>public/memes/{{ props.src }}</code></div>
     <span v-if="props.top" class="caption top">{{ props.top }}</span>
     <span v-if="props.bottom" class="caption bottom">{{ props.bottom }}</span>
+    <span
+      v-for="(label, i) in props.labels ?? []"
+      :key="i"
+      class="label"
+      :class="{ dark: label.dark }"
+      :style="{ left: `${label.x}%`, top: `${label.y}%`, width: `${label.w ?? 40}%`, fontSize: label.size ?? '1.3rem' }"
+      >{{ label.text }}</span
+    >
   </div>
 </template>
 
@@ -49,6 +59,20 @@ const base = import.meta.env.BASE_URL;
   color: white;
   -webkit-text-stroke: 1.5px black;
   paint-order: stroke fill;
+}
+.label {
+  position: absolute;
+  text-align: center;
+  font-weight: 800;
+  line-height: 1.15;
+  color: white;
+  -webkit-text-stroke: 1px black;
+  paint-order: stroke fill;
+  white-space: pre-line;
+}
+.label.dark {
+  color: #111;
+  -webkit-text-stroke: 0;
 }
 .top {
   top: 3%;
