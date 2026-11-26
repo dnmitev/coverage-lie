@@ -11,5 +11,6 @@ Until a file exists, the slide shows a placeholder with the expected file name.
 | `they-are-the-same.jpg` | They're the Same Picture | equivalent mutants |
 | `one-does-not-simply.jpg` | One Does Not Simply | running all mutants on every PR |
 | `drake.jpg` | Drake Hotline Bling (2 panels) | coverage vs mutation score |
+| `always-has-been.jpg` | Always Has Been | all mutants live in one build |
 
 Blank templates downloaded from imgflip.com (resized to max 1000 px).
