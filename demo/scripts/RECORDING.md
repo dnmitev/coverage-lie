@@ -130,3 +130,21 @@ Expected numbers below come from real runs (Node 26, macOS). Your timings will d
    - Say: "Perfect score. Zero testing. The agent gamed the metric, the gate caught it."
 3. Open PR **#4 "Demo: bulk discount"**: tests with exact values and the 2/3 boundary.
    - Comment: 🟢 100% on changed lines, all checks green.
+
+---
+
+## Clip 7: `step-7-zod.mp4` (GitHub, PRs #5–#6)
+
+**Message:** a Zod schema is static code; with `ignoreStatic: true` Stryker doesn't look at it.
+
+1. Open PR **#5 "Demo: Zod schema, agent-written tests"**. Show `src/coupon-schema.ts` in the diff and the two tests (`toBeDefined()`, `toThrow()`).
+   - `Tests` ✅, 100% coverage.
+   - Comment headline: **🟢 90.70% · ⚠️ 18 mutant(s) ignored on lines changed in this PR (18 static, "ignoreStatic" is on)**.
+   - Table: lines changed in this PR **🟠 50.00%** (4 killed, 4 survived, 18 ignored). `Gates` ❌.
+   - Say: "Green overall. Most of the schema was never mutated."
+2. Open PR **#6 "Demo: Zod schema"**.
+   - Diff: `stryker.config.json` keeps `"ignoreStatic": true` and excludes `!src/**/*-schema.ts`; new `stryker.schemas.config.mjs` mutates only the schemas with `ignoreStatic: false` and `break: 90`.
+   - The new tests: regex anchors `AB-CDE` / `ABC-DE`, bounds `AB` / 21 chars, `value: 100` vs `101`, exact error messages.
+   - Checks: the job has two Stryker steps (main + schemas); the comment merges both.
+   - Comment: 🟢 100% on changed lines, 23 killed, 0 ignored. All green.
+   - Say: "Stryker now mutates the schema: toUpperCase → toLowerCase, max → min, regex anchors. It still never mutates the numbers or .positive(). Test those anyway."

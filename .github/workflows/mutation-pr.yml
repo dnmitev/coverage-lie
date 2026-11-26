@@ -63,14 +63,20 @@ jobs:
         id: stryker
         run: npx stryker run
 
+      # Optional strict run for validation schemas (static mutants on), see demo/stryker.schemas.config.mjs.
+      - name: Stryker (schemas)
+        if: always() && hashFiles('demo/stryker.schemas.config.mjs') != ''
+        run: npx stryker run stryker.schemas.config.mjs
+
       - name: Report (job summary + annotations)
         if: always() && hashFiles('demo/reports/mutation/mutation.json') != ''
         run: |
-          node ../ci-samples/report.mjs reports/mutation/mutation.json \
+          node ../ci-samples/report.mjs reports/mutation/mutation.json reports/mutation/schemas.json \
             --baseline ../baseline/mutation.json --base "origin/$GITHUB_BASE_REF" \
             --out reports/mutation/report.md --annotations
           cat reports/mutation/report.md >> "$GITHUB_STEP_SUMMARY"
           node ../ci-samples/survivors-to-prompt.mjs reports/mutation/mutation.json > reports/mutation/agent-prompt.md
+          [ -f reports/mutation/schemas.json ] && node ../ci-samples/survivors-to-prompt.mjs reports/mutation/schemas.json >> reports/mutation/agent-prompt.md || true
 
       # One comment per PR, updated on every push. Fails silently on fork PRs (read-only token).
       - name: Sticky PR comment
@@ -94,11 +100,12 @@ jobs:
           name: mutation-report
           path: |
             demo/reports/mutation/mutation.html
+            demo/reports/mutation/schemas.html
             demo/reports/mutation/agent-prompt.md
             demo/reports/mutation/report.md
 
       - name: Gates (new code score, disable comments)
         if: always() && hashFiles('demo/reports/mutation/mutation.json') != ''
         run: |
-          node ../ci-samples/report.mjs reports/mutation/mutation.json --base "origin/$GITHUB_BASE_REF" \
+          node ../ci-samples/report.mjs reports/mutation/mutation.json reports/mutation/schemas.json --base "origin/$GITHUB_BASE_REF" \
             --gate-changed "$CHANGED_LINES_MIN_SCORE" --gate-disables
