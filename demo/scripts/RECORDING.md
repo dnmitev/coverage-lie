@@ -99,15 +99,34 @@ Expected numbers below come from real runs (Node 26, macOS). Your timings will d
 
 ---
 
-## Clip 5: `step-5-ci.mp4` (tag `step-5-ci`, on GitHub)
+## Clip 5: `step-5-ci.mp4` (GitHub, `main` + PRs #1 and #2)
 
-**Message:** in CI, on PRs, incremental, with a breaking threshold.
+**Message:** in CI, on PRs, reported where reviewers look, new code held to a higher bar.
 
 1. Show `stryker.config.json` thresholds `{ high: 80, low: 60, break: 50 }`.
-2. Show `.github/workflows/mutation-pr.yml`: cache restore of `stryker-incremental.json`, `npx stryker run`, job summary, artifact.
-3. On GitHub, open the demo PR **"Demo: weak tests"** (it brings back the step 2 tests):
-   - `Tests` workflow: ✅ green, 100% coverage.
-   - `Mutation testing (PR)`: ❌ red, `Final mutation score 45.71 under breaking threshold 50`.
-   - Open the job summary table and download the `mutation-report` artifact.
-   - Open `agent-prompt.md` from the artifact: the surviving mutants as a ready-made prompt for a coding agent.
-4. Punchline: "Same PR. Coverage says ship it. Stryker says no."
+2. Show `.github/workflows/mutation-pr.yml` briefly: Stryker, report, sticky comment, gates at the end.
+3. Open PR **#1 "Demo: weak tests"**:
+   - Checks: `Tests` ✅ (100% coverage), `Mutation testing (PR)` ❌.
+   - Sticky comment: **🔴 45.71% (-54.29 vs main)**, survivors as diffs.
+   - Punchline: "Same PR. Coverage says ship it. Stryker says no."
+4. Open PR **#2 "Demo: bulk discount, agent-written tests"**:
+   - Comment: overall **🟢 93.02%**, but **lines changed in this PR 🟡 70.00%**. The 3 survivors are marked 🆕.
+   - "Files changed" tab: the yellow annotations on `cart.ts` lines 27–28 ("Surviving mutant (EqualityOperator)...").
+   - Checks: failed step `Gates`: `Mutation score on changed lines: 70.00% (minimum 80%)`.
+   - Say: "The overall average looked great. The new code wasn't tested."
+5. Optional: README badge and https://dnmitev.github.io/coverage-lie/mutation/ (live report from main).
+
+---
+
+## Clip 6: `step-6-agents.mp4` (GitHub, PRs #2–#4)
+
+**Message:** Stryker as the reviewer of agent-written tests.
+
+1. PR #2 → Checks → artifact `mutation-report` → open `agent-prompt.md`: 3 surviving mutants, rules (don't touch `src/`, no disable comments).
+2. Open PR **#3 "Demo: bulk discount, silenced"**: the diff adds `// Stryker disable next-line all`.
+   - Comment headline: **🟢 100.00% · ⚠️ 8 mutant(s) ignored on lines changed in this PR**.
+   - Section "⚠️ 2 new `Stryker disable` comment(s)", both "no reason given".
+   - Checks: `Gates` ❌ with error annotations on the two comment lines.
+   - Say: "Perfect score. Zero testing. The agent gamed the metric, the gate caught it."
+3. Open PR **#4 "Demo: bulk discount"**: tests with exact values and the 2/3 boundary.
+   - Comment: 🟢 100% on changed lines, all checks green.
