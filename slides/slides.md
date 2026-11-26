@@ -242,6 +242,65 @@ Demo: a small shopping cart pricing module. Subtotal, coupons, free shipping ove
 layout: center
 ---
 
+# How Stryker runs (TypeScript)
+
+```mermaid {scale: 0.8}
+flowchart TB
+  subgraph prepare ["prepare once"]
+    direction LR
+    A["src/*.ts"] --> B["Babel parses TS,<br/>generates mutants"] --> C["one build,<br/>all mutants inside"] --> D["sandbox copy<br/>.stryker-tmp/"]
+  end
+  subgraph run ["run"]
+    direction LR
+    E["TS checker:<br/>drop CompileError"] --> F["dry run:<br/>coverage per test"] --> G["per mutant: switch on,<br/>run covering tests"] --> H["Killed · Survived ·<br/>Timeout · NoCoverage"]
+  end
+  prepare --> run
+```
+
+<div v-click class="muted mt-6">no recompile per mutant · tsc only checks types · your tests run unchanged</div>
+
+<!--
+1. Stryker parses your TypeScript with Babel (not tsc) and generates every mutant up front.
+2. It writes ONE instrumented version of each file with all mutants inside (next slide) into a sandbox copy of the project. Your files are never touched.
+3. The TypeScript checker type-checks mutants separately and throws out the ones that don't compile. That's the step where TS 7 native comes in.
+4. Dry run: all tests once, recording which test reaches which mutant.
+5. Then for each mutant: switch it on with a global flag, run only the tests that cover it. Test fails = killed, all pass = survived, hangs = timeout, no test reached it = no coverage.
+No rebuild between mutants, the test runner workers stay warm. That's why it's feasible at all.
+-->
+
+---
+layout: center
+---
+
+# All mutants, one build
+
+```ts {1|5-9|all}
+// @ts-nocheck   ← added by Stryker
+export function shippingFor(amount: number): number {
+  stryCov_9fa48("4");
+  return (
+    stryMutAct_9fa48("8") ? amount < FREE_SHIPPING_THRESHOLD :
+    stryMutAct_9fa48("7") ? amount > FREE_SHIPPING_THRESHOLD :
+    stryMutAct_9fa48("6") ? false :
+    stryMutAct_9fa48("5") ? true :
+    (stryCov_9fa48("5", "6", "7", "8"), amount >= FREE_SHIPPING_THRESHOLD)
+  ) ? 0 : SHIPPING_FEE;
+}
+```
+
+<div class="muted mt-4">real sandbox output, slightly trimmed · <code>stryMutAct</code> = is this mutant on? · <code>stryCov</code> = which test got here</div>
+
+<!--
+Real output from the demo sandbox (cleanTempDir: false), trimmed a little. Mutants 5-8 are all variants of the >= comparison; at most one is active per run, chosen by a global (__stryker__.activeMutant).
+@ts-nocheck: the instrumented code isn't type-safe, that's why type checking is a separate step on the original code.
+stryCov records coverage per test. Code that runs at import time, when no test is running, lands in a "static" bucket: that's exactly why static mutants (our Zod schema) must run the whole suite.
+Types stay in the file: Vitest strips them at runtime.
+-->
+
+---
+layout: center
+---
+
 # Demo 1: all green
 
 <Clip src="step-1-green.mp4" tag="step-1-green" />
@@ -530,19 +589,98 @@ layout: center
 
 ```ts
 // runs once, when the module loads
-export const FREE_SHIPPING_COUNTRIES = ['BG', 'RO', 'GR'];
+export const CouponInput = z.object({
+  code: z.string().trim().toUpperCase().regex(/^[A-Z0-9]{3,20}$/),
+  type: z.enum(['percent', 'fixed']),
+  value: z.number().positive().max(1000),
+});
 ```
 
 <v-clicks>
 
 - no single test "covers" it → Stryker runs **all** tests for each one
 - `ignoreStatic: true` → skipped... and never checked
-- worth it for config tables? usually not. for business rules? maybe.
+- your whole Zod schema is static 😬
 
 </v-clicks>
 
 <!--
-Static code runs at import time, so per-test coverage can't tell which test depends on it. Stryker has to rerun the whole suite per static mutant, and that can be the majority of your run time. ignoreStatic trades that time for a blind spot. Decide per project.
+Static code runs at import time, so per-test coverage can't tell which test depends on it. Stryker has to rerun the whole suite per static mutant. ignoreStatic trades that time for a blind spot.
+And here's the catch: a Zod schema is exactly that kind of code. All your validation rules live at module level.
+-->
+
+---
+layout: center
+---
+
+<div class="huge">18 / 28</div>
+
+<div class="muted mt-6">Zod schema mutants silently ignored with <code>ignoreStatic: true</code></div>
+
+<!--
+Measured on the demo coupon schema: 28 mutants, 18 ignored as static, 8 tested, 2 compile errors. Only the .refine() callback runs at parse time, so only its mutants were tested. Every other rule: regex, enum, limits, messages, ignored. Stryker still showed a nice green overall score.
+-->
+
+---
+layout: center
+---
+
+# What Stryker does to a Zod schema
+
+```diff
+- z.string().trim().toUpperCase()
++ z.string().trim().toLowerCase()
+- z.number().positive().max(1000)
++ z.number().positive().min(1000)
+- .regex(/^[A-Z0-9]{3,20}$/)
++ .regex(/[A-Z0-9]{3,20}$/)
+- z.enum(['percent', 'fixed'])
++ z.enum([])
+```
+
+<div v-click class="muted mt-4">not mutated: <code>1000</code>, <code>{3,20}</code>, <code>.positive()</code>, <code>.default(0)</code>, <code>.coerce</code> → test those anyway</div>
+
+<!--
+Stryker's mutators are syntactic: method names it knows (min/max, toUpperCase/toLowerCase, trim), regexes, arrays, strings, objects. It doesn't know Zod, so numbers, .positive(), .default() and .coerce never get mutated. No surviving mutant there doesn't mean those rules are tested.
+-->
+
+---
+layout: center
+---
+
+# ignoreStatic: the trade-off
+
+| | ignoreStatic: true | ignoreStatic: false |
+|---|---|---|
+| schema mutants tested | 8 / 28 | **23 / 28** |
+| ignored as static | 18 | 0 |
+| run time (78 mutants) | 4.3 s | 4.6 s |
+
+<div v-click class="mt-6 text-xl">validation = business rules → schemas get <strong>their own run</strong></div>
+
+<div v-click class="mt-4">
+
+```js
+// stryker.schemas.config.mjs
+export default { ...base, mutate: ['src/**/*-schema.ts'], ignoreStatic: false };
+```
+
+</div>
+
+<!--
+The remaining mutants are compile errors (the TypeScript checker throws them out). Here the cost is 0.3 s. With a 3-minute suite, each static mutant costs 3 minutes, so measure before you flip it in a big repo. What the demo does: the main config keeps ignoreStatic true and excludes "!src/**/*-schema.ts"; stryker.schemas.config.mjs mutates only the schemas with ignoreStatic false and a 90% break. CI runs both and merges them into one PR comment. Fast default, strict where the rules live.
+-->
+
+---
+layout: center
+---
+
+# Demo 7: Zod
+
+<Clip src="step-7-zod.mp4" tag="main (PRs #5–#6)" />
+
+<!--
+Video: PR #5, agent tests, "18 mutants ignored (static)", 50% on changed lines. PR #6: tests for every rule + a separate schemas config (ignoreStatic false, break 90), all 23 testable schema mutants killed, main run stays fast.
 -->
 
 ---
@@ -577,6 +715,47 @@ layout: center
 Agenda point 6.
 -->
 
+---
+layout: center
+---
+
+# What's worth mutating?
+
+<div class="grid grid-cols-2 gap-10 text-left text-lg">
+<div>
+
+### ✅ worth it
+
+- 💰 money: pricing, tax, rounding
+- 🔐 auth & permissions
+- 🛂 validation at trust boundaries (Zod)
+- 🔁 state machines, dates & expiry
+- 📚 shared libraries
+- 🤖 code written by agents
+
+</div>
+<div>
+
+### ⏭️ skip it
+
+- 🎨 UI markup & styling
+- 🧵 glue code, DI wiring
+- 📝 logging, metrics, messages
+- 🏭 generated code, migrations
+- 🔌 thin wrappers around 3rd-party APIs
+- 🐌 anything with slow or flaky tests
+
+</div>
+</div>
+
+<div v-click class="mt-8 text-xl">mutate where a flipped <code>&gt;</code> costs money or a flipped <code>&amp;&amp;</code> lets someone in</div>
+
+<!--
+Rule of thumb: code where a small mistake is expensive, and where the logic branches.
+Left: an off-by-one in pricing is our free-shipping bug; && → || in an isAllowed check is a security hole that passes the happy-path tests; Zod schemas we just saw; status transitions and expiry dates are boundaries everywhere; a shared lib spreads one survivor to every team; agent code because the tests were written to pass.
+Right: UI markup mutants change strings and class names and the tests that kill them are brittle snapshots; glue code has no logic, integration tests cover it; nobody should write tests for log messages; generated code isn't yours; wrappers test your mocks; slow/flaky suites cost more than they tell you, fix them first.
+Zod is on the left only at trust boundaries: a schema that just describes a type is mostly noise.
+-->
 ---
 layout: center
 ---

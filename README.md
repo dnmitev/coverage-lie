@@ -85,6 +85,43 @@ Is the native checker faster? Depends on mutant count, see `demo/bench/RESULTS.m
 | Demo: bulk discount, agent-written tests | new feature, tests that only check "less than" / "greater than" | ✅ overall 93% · ❌ changed lines 70% < 80% |
 | Demo: bulk discount, silenced | the agent "fixes" the gate with `Stryker disable` comments | "100%" · ❌ disable comments without a reason |
 | Demo: bulk discount | same feature, exact values and boundaries | ✅ 100% on changed lines |
+| Demo: Zod schema, agent-written tests | Zod schema + `toBeDefined()` / `toThrow()` tests | ✅ overall 91% · ⚠️ 18 schema mutants ignored as static · ❌ changed lines 50% |
+| Demo: Zod schema | tests for every rule + a strict schemas config | ✅ all 23 testable schema mutants killed |
+
+### Zod (and other schema libraries)
+
+A Zod schema is module-level code, so its mutants are **static**. With `ignoreStatic: true` (a common speed setting) Stryker skips them: on the demo schema, 18 of 28 mutants were ignored and only the `.refine()` callback was tested.
+With `ignoreStatic: false` Stryker mutates the chain (`toUpperCase` → `toLowerCase`, `.max()` → `.min()`, regex anchors and quantifiers, enum values, messages). It never mutates numbers, `.positive()`, `.default()` or `.coerce`, so test those anyway.
+Cost on the demo: 4.3 s → 4.6 s. On a big suite every static mutant reruns the whole suite, so the demo (PR "Demo: Zod schema") keeps the default fast and gives schemas their own run:
+
+```js
+// demo/stryker.schemas.config.mjs (main config: ignoreStatic: true, mutate excludes "!src/**/*-schema.ts")
+import base from './stryker.config.json' with { type: 'json' };
+export default {
+  ...base,
+  mutate: ['src/**/*-schema.ts'],
+  ignoreStatic: false,
+  thresholds: { high: 100, low: 90, break: 90 },
+  incrementalFile: 'reports/stryker-incremental-schemas.json',
+  htmlReporter: { fileName: 'reports/mutation/schemas.html' },
+  jsonReporter: { fileName: 'reports/mutation/schemas.json' },
+};
+```
+
+The workflows run it when the file exists and `report.mjs` merges both JSON reports into one PR comment.
+
+## What's worth mutation testing?
+
+| Worth it | Usually skip |
+|---|---|
+| money: pricing, discounts, tax, rounding | UI markup and styling |
+| authorization and permissions | glue code, controllers that only delegate, DI wiring |
+| validation at trust boundaries (Zod and friends) | logging, metrics, error message wording |
+| state machines, workflows, dates and expiry | generated code, migrations, config |
+| parsers, mappers, shared libraries | thin wrappers around third-party APIs |
+| code written by agents | anything with slow or flaky tests (fix those first) |
+
+Rule of thumb: mutate where a flipped `>` costs money or a flipped `&&` lets someone in.
 
 ## Mutation testing for agent-written tests
 
@@ -102,7 +139,7 @@ The prompt tells the agent not to touch `src/` and not to add `Stryker disable` 
 ## Drawbacks (honestly)
 
 - Slow: cost is roughly mutants × test time. Even slower on hosted CI runners (see `demo/bench/RESULTS.md`: 500 mutants 11.6 s on a laptop, 21.1 s on `ubuntu-latest`).
-- Static mutants (module-level code) need the whole suite per mutant; `ignoreStatic` skips them but then they are never checked.
+- Static mutants (module-level code, e.g. Zod schemas) need the whole suite per mutant; `ignoreStatic` skips them but then they are never checked.
 - Equivalent mutants need a human decision.
 - Flaky tests make scores noisy.
 - It only judges tests against code that exists: a missing check has no mutant.
