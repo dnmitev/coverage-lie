@@ -27,10 +27,12 @@ jobs:
           cache-dependency-path: demo/package-lock.json
       - run: npm ci
 
-      - name: Restore incremental report
-        uses: actions/cache@v6
+      - name: Restore incremental reports
+        uses: actions/cache/restore@v6
         with:
-          path: demo/reports/stryker-incremental.json
+          path: |
+            demo/reports/stryker-incremental.json
+            demo/reports/stryker-incremental-schemas.json
           key: stryker-incremental-main-${{ github.sha }}
           restore-keys: stryker-incremental-main-
 
@@ -41,6 +43,16 @@ jobs:
       - name: Stryker (schemas)
         if: always() && hashFiles('demo/stryker.schemas.config.mjs') != ''
         run: npx stryker run stryker.schemas.config.mjs ${{ github.event_name == 'schedule' && '--force' || '' }}
+
+      # Saved even when a threshold fails, so the next run (and every PR) starts from it.
+      - name: Save incremental reports
+        if: always() && hashFiles('demo/reports/stryker-incremental.json') != ''
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            demo/reports/stryker-incremental.json
+            demo/reports/stryker-incremental-schemas.json
+          key: stryker-incremental-main-${{ github.sha }}
 
       - name: Report to job summary
         if: always() && hashFiles('demo/reports/mutation/mutation.json') != ''

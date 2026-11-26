@@ -77,6 +77,13 @@ Is the native checker faster? Depends on mutant count, see `demo/bench/RESULTS.m
   - score on changed lines below 80% (new code gets a higher bar than the legacy average)
   - a new `Stryker disable` comment without a reason
 
+### Caching on GitHub runners
+
+- `reports/stryker-incremental.json` (and `-schemas.json`) go into `actions/cache`, key `stryker-incremental-<branch>-<sha>`, falling back to the branch's last run and then to `main`.
+- PRs can read `main`'s cache but not other PRs'. Unused caches are evicted after 7 days; the nightly run keeps `main` warm.
+- **Gotcha:** plain `actions/cache` only saves when the job succeeds, so a failing PR never saves and every push re-tests its changes from `main`'s baseline (demo PR: 43 of 59 reused, every time). The workflows use `actions/cache/restore` + `actions/cache/save` with `if: always()` instead (57 of 59 reused). A re-run of the same commit logs "Failed to save: Unable to reserve cache": harmless.
+- Incremental mode diffs source and tests only. Config and dependency changes are not detected, so the nightly run uses `--force`.
+
 ### Demo pull requests (do not merge)
 
 | PR | Story | Result |
