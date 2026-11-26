@@ -301,6 +301,20 @@ Types stay in the file: Vitest strips them at runtime.
 layout: center
 ---
 
+<Meme src="always-has-been.jpg" width="40rem" :labels="[
+  { text: 'your code', x: 12, y: 44, w: 30, size: '1.6rem' },
+  { text: 'Wait, all 50 mutants are in one build?', x: 40, y: 14, w: 26, size: '1.3rem' },
+  { text: 'Always has been', x: 60, y: 72, w: 36, size: '1.6rem' },
+]" />
+
+<!--
+Pause for the laugh. Then: this is why Stryker is fast enough to be usable. Older tools recompiled the project for every mutant.
+-->
+
+---
+layout: center
+---
+
 # Demo 1: all green
 
 <Clip src="step-1-green.mp4" tag="step-1-green" />
@@ -581,6 +595,53 @@ layout: center
 Hosted runners have few cores, so concurrency drops and wall time grows. Plus npm ci and sandbox copy on every run. Options: incremental on PRs, full run nightly, larger runners if you can pay, or scope mutate to what changed.
 -->
 
+---
+layout: center
+---
+
+# Cache the incremental report
+
+<v-clicks>
+
+- `reports/stryker-incremental.json`: every mutant's result + which tests covered it (~8 KB)
+- PR run: re-test only mutants in **changed code** or covered by **changed tests**
+- key `stryker-incremental-<branch>-<sha>` → fall back to own branch → **main**
+- PRs read main's cache, not each other's · 7 days unused = evicted
+- config / dependency changes aren't detected → nightly `--force`
+
+</v-clicks>
+
+<!--
+Stryker's incremental mode needs the previous result. On a laptop it's just a file; on GitHub runners every job starts empty, so it goes into actions/cache.
+Restore order: this branch's last run, then main's. That's why main must run on every merge (and nightly, to stay inside the 7-day eviction window).
+Incremental only diffs your source and tests. Bump vitest or change stryker.config.json and it won't notice: the nightly run uses --force.
+-->
+
+---
+layout: center
+---
+
+# The gotcha: red PRs never save
+
+```yaml {all|1-2|4-8}
+- uses: actions/cache@v6           # saves only when the job succeeds 🙃
+  # ... red PR → nothing saved → next push starts from main again
+
+- uses: actions/cache/restore@v6   # restore and save as separate steps
+# ... npx stryker run, report, gates ...
+- uses: actions/cache/save@v6
+  if: always()                     # save even when the job fails
+```
+
+| red PR, next push | reused |
+|---|---|
+| `actions/cache` | 43 / 59 (every time) |
+| `restore` + `save` with `if: always()` | **57 / 59** |
+
+<!--
+Measured on demo PR #2. With plain actions/cache the save step is skipped when the job fails, so every push to a failing PR re-tests all of its changes from main's baseline. The failing PR is exactly the one you iterate on.
+On a re-run with the same commit you'll see "Failed to save: Unable to reserve cache": harmless warning, the key already exists.
+-->
 ---
 layout: center
 ---
