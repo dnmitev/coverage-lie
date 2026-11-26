@@ -43,10 +43,14 @@ jobs:
           cache-dependency-path: demo/package-lock.json
       - run: npm ci
 
-      - name: Restore incremental report
-        uses: actions/cache@v6
+      # Restore and save are split: actions/cache only saves when the job succeeds,
+      # and a red PR is exactly the one you push to again.
+      - name: Restore incremental reports
+        uses: actions/cache/restore@v6
         with:
-          path: demo/reports/stryker-incremental.json
+          path: |
+            demo/reports/stryker-incremental.json
+            demo/reports/stryker-incremental-schemas.json
           key: stryker-incremental-${{ github.head_ref }}-${{ github.sha }}
           restore-keys: |
             stryker-incremental-${{ github.head_ref }}-
@@ -92,6 +96,15 @@ jobs:
           else
             gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@reports/mutation/report.md > /dev/null
           fi
+
+      - name: Save incremental reports (even when the job fails)
+        if: always() && hashFiles('demo/reports/stryker-incremental.json') != ''
+        uses: actions/cache/save@v6
+        with:
+          path: |
+            demo/reports/stryker-incremental.json
+            demo/reports/stryker-incremental-schemas.json
+          key: stryker-incremental-${{ github.head_ref }}-${{ github.sha }}
 
       - name: Upload HTML report and agent prompt
         if: always()
