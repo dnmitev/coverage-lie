@@ -23,7 +23,7 @@ export function subtotal(items: CartItem[]): number {
 }
 
 export function shippingFor(amount: number): number {
-  return amount > FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
+  return amount >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;
 }
 
 export function checkout(items: CartItem[], coupon?: Coupon, now = new Date()): Receipt {

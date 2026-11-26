@@ -21,6 +21,7 @@ export function applyCoupon(amount: number, coupon: Coupon): number {
     const percent = Math.min(coupon.value, MAX_PERCENT_DISCOUNT);
     return roundMoney(amount - (amount * percent) / 100);
   }
+  // Stryker disable next-line EqualityOperator: equivalent mutant, '>' and '>=' both return 0 when value === amount
   if (coupon.value >= amount) {
     return 0; // the order is on the house
   }
