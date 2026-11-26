@@ -242,6 +242,65 @@ Demo: a small shopping cart pricing module. Subtotal, coupons, free shipping ove
 layout: center
 ---
 
+# How Stryker runs (TypeScript)
+
+```mermaid {scale: 0.8}
+flowchart TB
+  subgraph prepare ["prepare once"]
+    direction LR
+    A["src/*.ts"] --> B["Babel parses TS,<br/>generates mutants"] --> C["one build,<br/>all mutants inside"] --> D["sandbox copy<br/>.stryker-tmp/"]
+  end
+  subgraph run ["run"]
+    direction LR
+    E["TS checker:<br/>drop CompileError"] --> F["dry run:<br/>coverage per test"] --> G["per mutant: switch on,<br/>run covering tests"] --> H["Killed · Survived ·<br/>Timeout · NoCoverage"]
+  end
+  prepare --> run
+```
+
+<div v-click class="muted mt-6">no recompile per mutant · tsc only checks types · your tests run unchanged</div>
+
+<!--
+1. Stryker parses your TypeScript with Babel (not tsc) and generates every mutant up front.
+2. It writes ONE instrumented version of each file with all mutants inside (next slide) into a sandbox copy of the project. Your files are never touched.
+3. The TypeScript checker type-checks mutants separately and throws out the ones that don't compile. That's the step where TS 7 native comes in.
+4. Dry run: all tests once, recording which test reaches which mutant.
+5. Then for each mutant: switch it on with a global flag, run only the tests that cover it. Test fails = killed, all pass = survived, hangs = timeout, no test reached it = no coverage.
+No rebuild between mutants, the test runner workers stay warm. That's why it's feasible at all.
+-->
+
+---
+layout: center
+---
+
+# All mutants, one build
+
+```ts {1|5-9|all}
+// @ts-nocheck   ← added by Stryker
+export function shippingFor(amount: number): number {
+  stryCov_9fa48("4");
+  return (
+    stryMutAct_9fa48("8") ? amount < FREE_SHIPPING_THRESHOLD :
+    stryMutAct_9fa48("7") ? amount > FREE_SHIPPING_THRESHOLD :
+    stryMutAct_9fa48("6") ? false :
+    stryMutAct_9fa48("5") ? true :
+    (stryCov_9fa48("5", "6", "7", "8"), amount >= FREE_SHIPPING_THRESHOLD)
+  ) ? 0 : SHIPPING_FEE;
+}
+```
+
+<div class="muted mt-4">real sandbox output, slightly trimmed · <code>stryMutAct</code> = is this mutant on? · <code>stryCov</code> = which test got here</div>
+
+<!--
+Real output from the demo sandbox (cleanTempDir: false), trimmed a little. Mutants 5-8 are all variants of the >= comparison; at most one is active per run, chosen by a global (__stryker__.activeMutant).
+@ts-nocheck: the instrumented code isn't type-safe, that's why type checking is a separate step on the original code.
+stryCov records coverage per test. Code that runs at import time, when no test is running, lands in a "static" bucket: that's exactly why static mutants (our Zod schema) must run the whole suite.
+Types stay in the file: Vitest strips them at runtime.
+-->
+
+---
+layout: center
+---
+
 # Demo 1: all green
 
 <Clip src="step-1-green.mp4" tag="step-1-green" />
