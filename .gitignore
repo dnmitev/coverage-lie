@@ -10,3 +10,5 @@ projects/
 # private speaker guide (generated locally: npm run speaker-guide)
 slides/SPEAKER_GUIDE.md
 exports/
+# demo videos: local copies for the live talk, published on YouTube (unlisted)
+slides/public/videos/*.mp4

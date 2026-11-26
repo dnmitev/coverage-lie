@@ -163,7 +163,7 @@ npm run export:pptx   # exports/coverage-lie.pptx (image per slide + speaker not
 ```
 
 Slidev, DEV.BG branding. Presented on Zoom: interaction goes through the chat (poll + "spot the survivor" quiz).
-`npm run speaker-guide` writes a local `SPEAKER_GUIDE.md` (every slide with its planned time and talking points, from the speaker notes). It is not committed. Meme templates go in `slides/public/memes/` (list in the README there), demo videos in `slides/public/videos/`.
+`npm run speaker-guide` writes a local `SPEAKER_GUIDE.md` (every slide with its planned time and talking points, from the speaker notes). It is not committed. Meme templates go in `slides/public/memes/` (list in the README there), demo videos are unlisted YouTube videos (`youtube="…"` on each demo slide); local copies in `slides/public/videos/` (gitignored) take priority when presenting.
 
 ## License
 

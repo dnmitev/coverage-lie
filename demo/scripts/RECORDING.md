@@ -1,6 +1,23 @@
 # Recording script
 
-Seven clips. Save as `slides/public/videos/<file>` (1080p, H.264 MP4). The deck shows a placeholder until a file exists.
+Seven clips, recorded locally, published on YouTube as **unlisted**, embedded in the slides.
+
+## From recording to slide
+
+1. Record and edit locally, export 1080p H.264 MP4 with the file name from the table below.
+2. Keep a copy in `slides/public/videos/<file>` (gitignored). During the live talk the deck plays the **local file** first: no buffering, no YouTube UI.
+3. Upload to YouTube: visibility **Unlisted**, "Allow embedding" on (default), not "made for kids" (that disables some player features), no end screen.
+4. Copy the video id (the part after `youtu.be/` or `watch?v=`) into the slide: `<Clip src="demo-1-green.mp4" ... youtube="VIDEO_ID" />`.
+5. Push. The public deck on GitHub Pages embeds the YouTube video; the PDF/PPTX release shows the thumbnail with a clickable YouTube link.
+
+How each place shows a demo:
+
+| Where | Plays |
+|---|---|
+| Your laptop, main slide window (the one you share in Zoom) | local file if present, else YouTube embed |
+| Presenter mode, next-slide preview, overview | thumbnail only (no second player) |
+| GitHub Pages | YouTube embed (local files are not published) |
+| PDF / PPTX release | thumbnail + `youtu.be` link |
 
 ## Time budget
 

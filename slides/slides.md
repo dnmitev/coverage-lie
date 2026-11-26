@@ -418,7 +418,7 @@ layout: center
 
 # Demo 1: all green
 
-<Clip src="demo-1-green.mp4" tag="step-1-green" />
+<Clip src="demo-1-green.mp4" tag="step-1-green" youtube="" />
 
 <!--
 ⏱ 1:15
@@ -431,7 +431,7 @@ layout: center
 
 # Demo 2: Stryker enters the chat
 
-<Clip src="demo-2-reveal.mp4" tag="step-2-reveal" />
+<Clip src="demo-2-reveal.mp4" tag="step-2-reveal" youtube="" />
 
 <!--
 ⏱ 2:45
@@ -470,7 +470,7 @@ layout: center
 
 # Demo 3: kill them all
 
-<Clip src="demo-3-kill.mp4" tag="step-3-kill" />
+<Clip src="demo-3-kill.mp4" tag="step-3-kill" youtube="" />
 
 <!--
 ⏱ 3:15
@@ -618,7 +618,7 @@ layout: center
 
 # Demo 4: go fast
 
-<Clip src="demo-4-fast.mp4" tag="step-4-fast" />
+<Clip src="demo-4-fast.mp4" tag="step-4-fast" youtube="" />
 
 <!--
 ⏱ 2:15
@@ -998,7 +998,7 @@ layout: center
 
 # Demo 5: in CI
 
-<Clip src="demo-5-ci.mp4" tag="main (PRs #1–#2)" />
+<Clip src="demo-5-ci.mp4" tag="main (PRs #1–#2)" youtube="" />
 
 <!--
 ⏱ 2:45
@@ -1032,7 +1032,7 @@ layout: center
 
 # Demo 6: Zod in a PR
 
-<Clip src="demo-6-zod.mp4" tag="main (PRs #5–#6)" />
+<Clip src="demo-6-zod.mp4" tag="main (PRs #5–#6)" youtube="" />
 
 <!--
 ⏱ 2:15
@@ -1150,7 +1150,7 @@ layout: center
 
 # Demo 7: agents in the loop
 
-<Clip src="demo-7-agents.mp4" tag="main (PRs #2–#4)" />
+<Clip src="demo-7-agents.mp4" tag="main (PRs #2–#4)" youtube="" />
 
 <!--
 ⏱ 2:45
