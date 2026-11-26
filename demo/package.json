@@ -6,7 +6,8 @@
     "test": "vitest run",
     "coverage": "vitest run --coverage",
     "typecheck": "node node_modules/@typescript/native/bin/tsc --noEmit",
-    "mutate": "stryker run"
+    "mutate": "stryker run",
+    "mutate:schemas": "stryker run stryker.schemas.config.mjs"
   },
   "devDependencies": {
     "@stryker-mutator/core": "10.1.1",
