@@ -41,10 +41,12 @@ jobs:
         run: |
           npm ci
           npx stryker run
+          if [ -f stryker.schemas.config.mjs ]; then npx stryker run stryker.schemas.config.mjs; fi
           mkdir -p ../slides/dist/mutation
           cp reports/mutation/mutation.html ../slides/dist/mutation/index.html
           cp reports/mutation/mutation.json ../slides/dist/mutation/mutation.json
-          node ../ci-samples/report.mjs reports/mutation/mutation.json --badge ../slides/dist/mutation/badge.json
+          if [ -f reports/mutation/schemas.html ]; then cp reports/mutation/schemas.html ../slides/dist/mutation/schemas.html; fi
+          node ../ci-samples/report.mjs reports/mutation/mutation.json reports/mutation/schemas.json --badge ../slides/dist/mutation/badge.json
 
       - uses: actions/configure-pages@v6
       - uses: actions/upload-pages-artifact@v5

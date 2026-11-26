@@ -597,10 +597,19 @@ layout: center
 | ignored as static | 18 | 0 |
 | run time (78 mutants) | 4.3 s | 4.6 s |
 
-<div v-click class="mt-6 text-xl">validation = business rules → <strong>turn it off</strong>, or keep schemas in their own run</div>
+<div v-click class="mt-6 text-xl">validation = business rules → schemas get <strong>their own run</strong></div>
+
+<div v-click class="mt-4">
+
+```js
+// stryker.schemas.config.mjs
+export default { ...base, mutate: ['src/**/*-schema.ts'], ignoreStatic: false };
+```
+
+</div>
 
 <!--
-The remaining mutants are compile errors (the TypeScript checker throws them out). Here the cost is 0.3 s. With a 3-minute suite, each static mutant costs 3 minutes, so measure before you flip it in a big repo. Options: ignoreStatic false everywhere, or a separate Stryker config that mutates only src/**/schema*.ts with ignoreStatic false, run nightly.
+The remaining mutants are compile errors (the TypeScript checker throws them out). Here the cost is 0.3 s. With a 3-minute suite, each static mutant costs 3 minutes, so measure before you flip it in a big repo. What the demo does: the main config keeps ignoreStatic true and excludes "!src/**/*-schema.ts"; stryker.schemas.config.mjs mutates only the schemas with ignoreStatic false and a 90% break. CI runs both and merges them into one PR comment. Fast default, strict where the rules live.
 -->
 
 ---
@@ -612,7 +621,7 @@ layout: center
 <Clip src="step-7-zod.mp4" tag="main (PRs #5–#6)" />
 
 <!--
-Video: PR #5, agent tests, "18 mutants ignored (static)", 50% on changed lines. PR #6: tests for every rule + ignoreStatic false, all 23 testable schema mutants killed.
+Video: PR #5, agent tests, "18 mutants ignored (static)", 50% on changed lines. PR #6: tests for every rule + a separate schemas config (ignoreStatic false, break 90), all 23 testable schema mutants killed, main run stays fast.
 -->
 
 ---
@@ -647,6 +656,47 @@ layout: center
 Agenda point 6.
 -->
 
+---
+layout: center
+---
+
+# What's worth mutating?
+
+<div class="grid grid-cols-2 gap-10 text-left text-lg">
+<div>
+
+### ✅ worth it
+
+- 💰 money: pricing, tax, rounding
+- 🔐 auth & permissions
+- 🛂 validation at trust boundaries (Zod)
+- 🔁 state machines, dates & expiry
+- 📚 shared libraries
+- 🤖 code written by agents
+
+</div>
+<div>
+
+### ⏭️ skip it
+
+- 🎨 UI markup & styling
+- 🧵 glue code, DI wiring
+- 📝 logging, metrics, messages
+- 🏭 generated code, migrations
+- 🔌 thin wrappers around 3rd-party APIs
+- 🐌 anything with slow or flaky tests
+
+</div>
+</div>
+
+<div v-click class="mt-8 text-xl">mutate where a flipped <code>&gt;</code> costs money or a flipped <code>&amp;&amp;</code> lets someone in</div>
+
+<!--
+Rule of thumb: code where a small mistake is expensive, and where the logic branches.
+Left: an off-by-one in pricing is our free-shipping bug; && → || in an isAllowed check is a security hole that passes the happy-path tests; Zod schemas we just saw; status transitions and expiry dates are boundaries everywhere; a shared lib spreads one survivor to every team; agent code because the tests were written to pass.
+Right: UI markup mutants change strings and class names and the tests that kill them are brittle snapshots; glue code has no logic, integration tests cover it; nobody should write tests for log messages; generated code isn't yours; wrappers test your mocks; slow/flaky suites cost more than they tell you, fix them first.
+Zod is on the left only at trust boundaries: a schema that just describes a type is mostly noise.
+-->
 ---
 layout: center
 ---

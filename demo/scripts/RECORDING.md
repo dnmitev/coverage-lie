@@ -143,6 +143,8 @@ Expected numbers below come from real runs (Node 26, macOS). Your timings will d
    - Table: lines changed in this PR **🟠 50.00%** (4 killed, 4 survived, 18 ignored). `Gates` ❌.
    - Say: "Green overall. Most of the schema was never mutated."
 2. Open PR **#6 "Demo: Zod schema"**.
-   - Diff: `stryker.config.json` → `"ignoreStatic": false`, and the new tests (regex anchors `AB-CDE` / `ABC-DE`, bounds `AB` / 21 chars, `value: 100` vs `101`, exact error messages).
+   - Diff: `stryker.config.json` keeps `"ignoreStatic": true` and excludes `!src/**/*-schema.ts`; new `stryker.schemas.config.mjs` mutates only the schemas with `ignoreStatic: false` and `break: 90`.
+   - The new tests: regex anchors `AB-CDE` / `ABC-DE`, bounds `AB` / 21 chars, `value: 100` vs `101`, exact error messages.
+   - Checks: the job has two Stryker steps (main + schemas); the comment merges both.
    - Comment: 🟢 100% on changed lines, 23 killed, 0 ignored. All green.
    - Say: "Stryker now mutates the schema: toUpperCase → toLowerCase, max → min, regex anchors. It still never mutates the numbers or .positive(). Test those anyway."
