@@ -1,0 +1,62 @@
+# GitHub Pages: the slides at /, the live mutation report from main at /mutation/,
+# and a shields.io badge at /mutation/badge.json.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths: ['slides/**', 'demo/**', 'ci-samples/**']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: |
+            slides/package-lock.json
+            demo/package-lock.json
+
+      - name: Build slides
+        working-directory: slides
+        run: |
+          npm ci
+          npx slidev build --base /${{ github.event.repository.name }}/
+
+      - name: Mutation report
+        working-directory: demo
+        run: |
+          npm ci
+          npx stryker run
+          mkdir -p ../slides/dist/mutation
+          cp reports/mutation/mutation.html ../slides/dist/mutation/index.html
+          cp reports/mutation/mutation.json ../slides/dist/mutation/mutation.json
+          node ../ci-samples/report.mjs reports/mutation/mutation.json --badge ../slides/dist/mutation/badge.json
+
+      - uses: actions/configure-pages@v6
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: slides/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

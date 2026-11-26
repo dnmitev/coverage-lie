@@ -1,6 +1,9 @@
 # Mutation testing on pull requests.
-# Incremental mode: only mutants in changed code (or covered by changed tests) are re-tested.
-# The baseline comes from the last run on main (see mutation-main.yml).
+# - incremental: only mutants in changed code (or covered by changed tests) are re-tested
+# - sticky PR comment: score, change vs main, score on the lines this PR changed, survivors as diffs
+# - inline annotations on the PR diff for every surviving mutant
+# - gates: overall score (thresholds.break), score on changed lines, new disable comments without a reason
+# Every step runs and reports first; the gates fail the job at the end.
 name: Mutation testing (PR)
 
 on:
@@ -11,9 +14,19 @@ concurrency:
   group: mutation-${{ github.head_ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+  actions: read # download the baseline report from main
+  pull-requests: write # sticky comment
+
 defaults:
   run:
     working-directory: demo
+
+env:
+  CHANGED_LINES_MIN_SCORE: 80 # new code is held to a higher bar than the legacy average
+  REPORT_PATH_PREFIX: demo/ # report paths are relative to demo/, annotations need repo paths
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   stryker:
@@ -39,34 +52,42 @@ jobs:
             stryker-incremental-${{ github.head_ref }}-
             stryker-incremental-main-
 
-      # Agents (and humans) like to silence what they can't fix.
-      # New disable comments are listed for review; one without a reason fails the job.
-      - name: Check new Stryker disable comments
-        env:
-          BASE_REF: ${{ github.base_ref }}
+      - name: Download baseline report from main
+        continue-on-error: true
         run: |
-          added=$(git diff "origin/$BASE_REF...HEAD" -U0 -- . | grep -E '^\+.*Stryker disable' || true)
-          if [ -n "$added" ]; then
-            { echo '## New Stryker disable comments, please review'; echo '```'; echo "$added"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          run=$(gh run list --workflow mutation-main.yml --branch main --status success --limit 1 --json databaseId --jq '.[0].databaseId')
+          gh run download "$run" --name mutation-json --dir ../baseline
+
+      # Fails when the score drops below thresholds.break (stryker.config.json).
+      - name: Stryker
+        id: stryker
+        run: npx stryker run
+
+      - name: Report (job summary + annotations)
+        if: always() && hashFiles('demo/reports/mutation/mutation.json') != ''
+        run: |
+          node ../ci-samples/report.mjs reports/mutation/mutation.json \
+            --baseline ../baseline/mutation.json --base "origin/$GITHUB_BASE_REF" \
+            --out reports/mutation/report.md --annotations
+          cat reports/mutation/report.md >> "$GITHUB_STEP_SUMMARY"
+          node ../ci-samples/survivors-to-prompt.mjs reports/mutation/mutation.json > reports/mutation/agent-prompt.md
+
+      # One comment per PR, updated on every push. Fails silently on fork PRs (read-only token).
+      - name: Sticky PR comment
+        if: always() && hashFiles('demo/reports/mutation/report.md') != ''
+        continue-on-error: true
+        env:
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          id=$(gh api "repos/$GITHUB_REPOSITORY/issues/$PR/comments" --paginate \
+            --jq '.[] | select(.body | startswith("<!-- stryker-report -->")) | .id' | head -1)
+          if [ -n "$id" ]; then
+            gh api -X PATCH "repos/$GITHUB_REPOSITORY/issues/comments/$id" -F body=@reports/mutation/report.md > /dev/null
+          else
+            gh api -X POST "repos/$GITHUB_REPOSITORY/issues/$PR/comments" -F body=@reports/mutation/report.md > /dev/null
           fi
-          if printf '%s\n' "$added" | grep -E 'Stryker disable' | grep -vqE 'Stryker (disable|restore)[a-z-]* [^:]+: .+'; then
-            echo '::error::Stryker disable comment without a reason'
-            exit 1
-          fi
 
-      # Fails the job when the score drops below thresholds.break (stryker.config.json).
-      - run: npx stryker run
-
-      - name: Mutation score to job summary
-        if: always()
-        run: node ../ci-samples/score-summary.mjs reports/mutation/mutation.json >> "$GITHUB_STEP_SUMMARY"
-
-      # Ready-made prompt for a coding agent: "write tests that kill these mutants".
-      - name: Survivors as agent prompt
-        if: always()
-        run: node ../ci-samples/survivors-to-prompt.mjs reports/mutation/mutation.json > reports/mutation/agent-prompt.md
-
-      - name: Upload HTML report
+      - name: Upload HTML report and agent prompt
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -74,3 +95,10 @@ jobs:
           path: |
             demo/reports/mutation/mutation.html
             demo/reports/mutation/agent-prompt.md
+            demo/reports/mutation/report.md
+
+      - name: Gates (new code score, disable comments)
+        if: always() && hashFiles('demo/reports/mutation/mutation.json') != ''
+        run: |
+          node ../ci-samples/report.mjs reports/mutation/mutation.json --base "origin/$GITHUB_BASE_REF" \
+            --gate-changed "$CHANGED_LINES_MIN_SCORE" --gate-disables

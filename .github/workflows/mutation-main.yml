@@ -5,7 +5,7 @@ name: Mutation testing (main)
 on:
   push:
     branches: [main]
-    paths: ['demo/**']
+    paths: ['demo/**', 'ci-samples/**']
   schedule:
     - cron: '0 3 * * *'
   workflow_dispatch:
@@ -37,9 +37,11 @@ jobs:
       # Nightly runs ignore the cache and re-test everything (catches drift, e.g. dependency updates).
       - run: npx stryker run ${{ github.event_name == 'schedule' && '--force' || '' }}
 
-      - name: Mutation score to job summary
-        if: always()
-        run: node ../ci-samples/score-summary.mjs reports/mutation/mutation.json >> "$GITHUB_STEP_SUMMARY"
+      - name: Report to job summary
+        if: always() && hashFiles('demo/reports/mutation/mutation.json') != ''
+        run: |
+          node ../ci-samples/report.mjs reports/mutation/mutation.json --out reports/mutation/report.md
+          cat reports/mutation/report.md >> "$GITHUB_STEP_SUMMARY"
 
       - name: Upload HTML report
         if: always()
@@ -47,3 +49,12 @@ jobs:
         with:
           name: mutation-report
           path: demo/reports/mutation/mutation.html
+
+      # Baseline for PRs ("+/- vs main" in the PR comment).
+      - name: Upload JSON report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-json
+          path: demo/reports/mutation/mutation.json
+          retention-days: 90
