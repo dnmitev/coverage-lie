@@ -1,0 +1,52 @@
+# Mutation testing on pull requests.
+# Incremental mode: only mutants in changed code (or covered by changed tests) are re-tested.
+# The baseline comes from the last run on main (see mutation-main.yml).
+name: Mutation testing (PR)
+
+on:
+  pull_request:
+    paths: ['demo/**']
+
+concurrency:
+  group: mutation-${{ github.head_ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: demo
+
+jobs:
+  stryker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: demo/package-lock.json
+      - run: npm ci
+
+      - name: Restore incremental report
+        uses: actions/cache@v6
+        with:
+          path: demo/reports/stryker-incremental.json
+          key: stryker-incremental-${{ github.head_ref }}-${{ github.sha }}
+          restore-keys: |
+            stryker-incremental-${{ github.head_ref }}-
+            stryker-incremental-main-
+
+      # Fails the job when the score drops below thresholds.break (stryker.config.json).
+      - run: npx stryker run
+
+      - name: Mutation score to job summary
+        if: always()
+        run: node ../ci-samples/score-summary.mjs reports/mutation/mutation.json >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload HTML report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: mutation-report
+          path: demo/reports/mutation/mutation.html
