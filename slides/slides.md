@@ -608,9 +608,11 @@ layout: center
 | ≥ high | 🟢 |
 | ≥ low | 🟡 |
 | < break | ❌ CI fails |
+| **lines changed in the PR** < 80% | ❌ CI fails |
 
 <!--
 Start with break low or null. The goal is the conversation in code review, not another number to game.
+The last row is the one I like most: legacy code can sit at 60%, but new code is held to 80%. The overall average can't hide a badly tested new feature. (Not a Stryker option: ci-samples/report.mjs computes it from the PR diff.)
 -->
 
 ---
@@ -622,7 +624,27 @@ layout: center
 <Clip src="step-5-ci.mp4" tag="step-5-ci" />
 
 <!--
-Video: PR workflow, incremental baseline from main via actions/cache, score in job summary, HTML report as artifact. Nightly job does a full --force run.
+Video: PR #1 (weak tests) red with 45.71%, PR #2 (new feature) green overall 93% but red on changed lines 70%. Sticky comment, inline annotations on the diff, HTML report artifact.
+-->
+
+---
+layout: center
+---
+
+# Reporting people actually read
+
+<v-clicks>
+
+- 💬 **sticky PR comment**: score, Δ vs main, score on *your* lines, survivors as diffs
+- 📍 **inline annotations** on the exact line in "Files changed"
+- 🚦 **gates** run *after* the report is posted
+- 🌐 **live report + badge** from main on GitHub Pages
+
+</v-clicks>
+
+<!--
+Nobody downloads an HTML artifact from a CI run. People read PR comments and look at the diff. Put the survivors where the reviewer already is.
+All of this is ~200 lines in ci-samples/report.mjs, no paid service. Stryker Dashboard is the hosted alternative (free for open source).
 -->
 
 ---
@@ -714,6 +736,18 @@ Write or improve tests so that each change makes at least one test fail.
 ```
 
 <div class="muted mt-4"><code>ci-samples/survivors-to-prompt.mjs</code> · uploaded as a CI artifact on every PR</div>
+
+---
+layout: center
+---
+
+# Demo 6: agents in the loop
+
+<Clip src="step-6-agents.mp4" tag="main (PRs #2–#4)" />
+
+<!--
+Video: PR #2 agent-written tests, gate fails, download agent-prompt.md. PR #3: the agent "fixed" it with Stryker disable comments: score 100%, headline warns 8 ignored mutants, gate fails. PR #4: proper tests, 100% on changed lines, green.
+-->
 
 <!--
 Far better than "write better tests". Concrete, checkable, small. The "don't touch src" rule matters: otherwise the agent "fixes" the mutant by changing the code until the test passes.
