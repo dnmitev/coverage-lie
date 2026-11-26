@@ -18,8 +18,20 @@ export interface Receipt {
 export const FREE_SHIPPING_THRESHOLD = 100;
 export const SHIPPING_FEE = 5.99;
 
+/** Buy 3 or more of the same item and get 10% off that line. */
+export const BULK_QUANTITY = 3;
+export const BULK_DISCOUNT_PERCENT = 10;
+
+export function lineTotal(item: CartItem): number {
+  const gross = item.price * item.quantity;
+  if (item.quantity >= BULK_QUANTITY) {
+    return roundMoney(gross - (gross * BULK_DISCOUNT_PERCENT) / 100);
+  }
+  return roundMoney(gross);
+}
+
 export function subtotal(items: CartItem[]): number {
-  return roundMoney(items.reduce((sum, item) => sum + item.price * item.quantity, 0));
+  return roundMoney(items.reduce((sum, item) => sum + lineTotal(item), 0));
 }
 
 export function shippingFor(amount: number): number {
