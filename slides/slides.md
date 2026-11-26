@@ -57,6 +57,29 @@ layout: center
 layout: center
 ---
 
+# Agenda
+
+<div class="text-left text-xl leading-relaxed mt-4">
+
+1. The green-report illusion
+2. Coverage measures execution, not verification
+3. Mutation testing in a nutshell
+4. StrykerJS: how it works + demo
+5. Making it practical (and the fine print)
+6. Adopting it in your team
+7. Agents write the tests now
+8. Takeaways & Q&A
+
+</div>
+
+<!--
+⏱ 0:45
+Quick run through, don't read every line. Mention: about 7 short demo videos along the way, questions in the chat any time, I'll answer them at the end.
+-->
+---
+layout: center
+---
+
 <div class="big">What's your coverage gate in CI?</div>
 
 <div class="muted mt-6 text-2xl">💬 type it in the Zoom chat: <code>none</code> · <code>70</code> · <code>80</code> · <code>90</code> · <code>100</code></div>

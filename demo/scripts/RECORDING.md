@@ -15,7 +15,7 @@ Seven clips. Save as `slides/public/videos/<file>` (1080p, H.264 MP4). The deck 
 | 7 | `demo-7-agents.mp4` | GitHub, PRs #2–#4 | **2:30** | Demo 7: agents in the loop |
 | | | | **15:30** | |
 
-The speaker guide (`slides/SPEAKER_GUIDE.md`) plans each demo slide as clip length + ~15 s to set it up. If a clip runs long, cut the "Cut first" items, then speed up waits; don't speed up typing or explanations.
+The speaker guide (`npm run speaker-guide` in `slides/`, local only) plans each demo slide as clip length + ~15 s to set it up. If a clip runs long, cut the "Cut first" items, then speed up waits; don't speed up typing or explanations.
 
 ## Recording for Zoom
 

@@ -159,7 +159,7 @@ cd slides && npm ci && npm run dev
 ```
 
 Slidev, DEV.BG branding. Presented on Zoom: interaction goes through the chat (poll + "spot the survivor" quiz).
-`slides/SPEAKER_GUIDE.md` lists every slide with its planned time and talking points; it is generated from the speaker notes (`npm run speaker-guide` after editing `slides.md`). Meme templates go in `slides/public/memes/` (list in the README there), demo videos in `slides/public/videos/`.
+`npm run speaker-guide` writes a local `SPEAKER_GUIDE.md` (every slide with its planned time and talking points, from the speaker notes). It is not committed. Meme templates go in `slides/public/memes/` (list in the README there), demo videos in `slides/public/videos/`.
 
 ## License
 
