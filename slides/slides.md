@@ -18,6 +18,12 @@ class: cover
 
 <div class="muted mt-10">Dimitar Mitev</div>
 
+<!--
+⏱ 0:30
+§ Intro
+Camera on. One sentence: "100% coverage tells you your code ran, not that it's tested. Today: how to find out what your tests really check." Tell them: questions in the Zoom chat any time, I'll take them at the end.
+-->
+
 ---
 layout: center
 ---
@@ -43,6 +49,7 @@ layout: center
 </div>
 
 <!--
+⏱ 0:45
 30 seconds max. Who I am, why I care: I've shipped bugs on 100% covered lines too.
 -->
 
@@ -50,13 +57,13 @@ layout: center
 layout: center
 ---
 
-<div class="big">Who has a coverage gate in CI?</div>
+<div class="big">What's your coverage gate in CI?</div>
 
-<div class="muted mt-6">keep your hand up if it's ≥ 80%</div>
+<div class="muted mt-6 text-2xl">💬 type it in the Zoom chat: <code>none</code> · <code>70</code> · <code>80</code> · <code>90</code> · <code>100</code></div>
 
 <!--
-Hook: "Hands up if your project has a coverage gate in CI." Keep hands up if it's above 80. Above 90. Anyone at 100? Great, this talk is about you.
-Joke for the people who put their hands down: "The rest of you, I envy your honesty."
+⏱ 1:00
+Hook, Zoom version: ask them to type their coverage gate in the chat. Wait 15-20 seconds (chat lags), then read 3-4 answers out loud, by name. Anyone with 100? "Great, this talk is about you." Someone with "none"? "I envy your honesty."
 -->
 
 ---
@@ -66,6 +73,8 @@ layout: center
 <Meme src="this-is-fine.jpg" top="coverage: 100%" bottom="prod: on fire" width="40rem" />
 
 <!--
+⏱ 0:20
+§ 1 · The green-report illusion
 Agenda point 1: the green-report illusion.
 Everyone has seen it: the badge is green, the dashboard is green, the sprint review screenshot is green. And on Friday evening something with a perfectly covered line breaks in prod.
 -->
@@ -79,6 +88,7 @@ layout: center
 <div class="muted mt-6">it means your code <strong>ran</strong>. that's it.</div>
 
 <!--
+⏱ 0:45
 The whole talk in one sentence. Coverage answers "did this line execute during the tests?" It never answers "would any test fail if this line were wrong?"
 -->
 
@@ -98,6 +108,8 @@ it('checks out', () => {
 <div class="muted mt-4">100% line coverage. 0% verification.</div>
 
 <!--
+⏱ 1:00
+§ 2 · Coverage measures execution
 Agenda point 2. This is a real test from the demo repo. It executes every line of checkout. Coverage tool is happy. It would pass if checkout returned the wrong total, a negative total, or a pizza emoji.
 -->
 
@@ -112,6 +124,7 @@ layout: center
 ]" />
 
 <!--
+⏱ 0:20
 Calling code is not testing code. A test is an assertion about behaviour.
 -->
 
@@ -129,6 +142,7 @@ expect(typeof isCouponValid(c, 100, now)).toBe('boolean'); // 🤡
 ```
 
 <!--
+⏱ 1:15
 Four patterns everyone has written (me too). All of them push coverage up, none of them pin down behaviour. Point at the typeof boolean one, wait for laughs.
 Then: "Ask a coding agent to get coverage to 100% and this is exactly what you get back. Fast." Plant the seed, we come back to agents after the demo.
 -->
@@ -142,6 +156,7 @@ layout: center
 <div class="muted mt-6">Goodhart's law</div>
 
 <!--
+⏱ 0:45
 Set a coverage target and people will hit it, with the cheapest tests possible. Nobody is evil, the metric just rewards running code, not checking it.
 -->
 
@@ -152,6 +167,8 @@ layout: center
 <div class="big">Who tests the tests?</div>
 
 <!--
+⏱ 0:20
+§ 3 · Mutation testing in a nutshell
 Transition to agenda point 3. We review code, we lint code, we type-check code. Tests are code. Who checks that they actually catch anything?
 -->
 
@@ -173,6 +190,7 @@ layout: center
 <div v-click class="mt-8 big">score = killed / all</div>
 
 <!--
+⏱ 1:15
 The idea is from 1971, Richard Lipton. It was just too slow for 40 years. Now it isn't.
 If you can change the code and no test notices, that code isn't really tested.
 -->
@@ -201,9 +219,41 @@ layout: center
 <div class="muted mt-4">the bugs you would write on a Friday afternoon</div>
 
 <!--
+⏱ 1:00
 Mutators simulate real mistakes: off-by-one, wrong boolean operator, removed block, wrong string, flipped condition. Stryker has ~30 of them for JS/TS.
 -->
 
+---
+layout: center
+---
+
+# Quiz: spot the survivor 🧟
+
+```ts
+const canBuyBeer = (age: number) => age >= 18;
+
+it('checks age', () => {
+  expect(canBuyBeer(30)).toBe(true);
+  expect(canBuyBeer(5)).toBe(false);
+});
+```
+
+<div class="grid grid-cols-4 gap-4 mt-6 text-xl font-mono">
+  <div>A <code>age &gt; 18</code></div>
+  <div>B <code>age &lt; 18</code></div>
+  <div>C <code>true</code></div>
+  <div>D <code>false</code></div>
+</div>
+
+<div class="muted mt-4">💬 which mutant survives? A, B, C or D in the chat</div>
+
+<div v-click class="text-4xl font-extrabold mt-4">A. nobody tested 18.</div>
+
+<!--
+⏱ 1:30
+Give them 20-30 seconds, Zoom chat is slow. Read a few answers. Then reveal: B fails for 30, C fails for 5, D fails for 30. A survives because no test uses exactly 18. 100% coverage, and an 18-year-old can't buy a beer.
+This is the whole talk in one slide; the demo is the same bug with free shipping.
+-->
 ---
 layout: center
 ---
@@ -220,6 +270,7 @@ layout: center
 | **Ignored** | you said no. with a reason, hopefully. |
 
 <!--
+⏱ 0:45
 Keep this short. The ones that matter: survived and no coverage.
 -->
 
@@ -234,6 +285,8 @@ layout: center
 <div class="muted">JS · TS · Vitest · Jest · Mocha · Karma · Cucumber</div>
 
 <!--
+⏱ 0:30
+§ 4 · StrykerJS: how it works + demo
 Agenda point 4. StrykerJS, open source, v10 today. Works with every popular runner. We use Vitest 5 and TypeScript 7.
 Demo: a small shopping cart pricing module. Subtotal, coupons, free shipping over 100.
 -->
@@ -260,6 +313,7 @@ flowchart TB
 <div v-click class="muted mt-6">no recompile per mutant · tsc only checks types · your tests run unchanged</div>
 
 <!--
+⏱ 1:30
 1. Stryker parses your TypeScript with Babel (not tsc) and generates every mutant up front.
 2. It writes ONE instrumented version of each file with all mutants inside (next slide) into a sandbox copy of the project. Your files are never touched.
 3. The TypeScript checker type-checks mutants separately and throws out the ones that don't compile. That's the step where TS 7 native comes in.
@@ -291,6 +345,7 @@ export function shippingFor(amount: number): number {
 <div class="muted mt-4">real sandbox output, slightly trimmed · <code>stryMutAct</code> = is this mutant on? · <code>stryCov</code> = which test got here</div>
 
 <!--
+⏱ 1:15
 Real output from the demo sandbox (cleanTempDir: false), trimmed a little. Mutants 5-8 are all variants of the >= comparison; at most one is active per run, chosen by a global (__stryker__.activeMutant).
 @ts-nocheck: the instrumented code isn't type-safe, that's why type checking is a separate step on the original code.
 stryCov records coverage per test. Code that runs at import time, when no test is running, lands in a "static" bucket: that's exactly why static mutants (our Zod schema) must run the whole suite.
@@ -308,7 +363,8 @@ layout: center
 ]" />
 
 <!--
-Pause for the laugh. Then: this is why Stryker is fast enough to be usable. Older tools recompiled the project for every mutant.
+⏱ 0:20
+Pause a beat (on Zoom you won't hear the laugh). Then: this is why Stryker is fast enough to be usable. Older tools recompiled the project for every mutant.
 -->
 
 ---
@@ -317,9 +373,10 @@ layout: center
 
 # Demo 1: all green
 
-<Clip src="step-1-green.mp4" tag="step-1-green" />
+<Clip src="demo-1-green.mp4" tag="step-1-green" />
 
 <!--
+⏱ 1:15
 Video: tests pass, coverage 100% across statements, branches, functions, lines. Celebrate ironically.
 -->
 
@@ -329,9 +386,10 @@ layout: center
 
 # Demo 2: Stryker enters the chat
 
-<Clip src="step-2-reveal.mp4" tag="step-2-reveal" />
+<Clip src="demo-2-reveal.mp4" tag="step-2-reveal" />
 
 <!--
+⏱ 2:45
 Video: npx stryker run, 50 mutants, 21 survived. Open the HTML report, click through a few survivors.
 -->
 
@@ -344,6 +402,7 @@ layout: center
 <div class="muted mt-6">same tests. same code. different question.</div>
 
 <!--
+⏱ 0:30
 Coverage: 100%. Mutation score: 58.00%. 21 of 50 mutants survived. Let that sink in.
 -->
 
@@ -355,15 +414,21 @@ layout: center
   { text: 'Me: writes tests until coverage hits 100%\nStryker: 58%', x: 4, y: 8, w: 92, size: '1.25rem', dark: true },
 ]" />
 
+<!--
+⏱ 0:15
+Let it sit for two seconds. On Zoom you won't hear the laugh, don't rush to fill the silence.
+-->
+
 ---
 layout: center
 ---
 
 # Demo 3: kill them all
 
-<Clip src="step-3-kill.mp4" tag="step-3-kill" />
+<Clip src="demo-3-kill.mp4" tag="step-3-kill" />
 
 <!--
+⏱ 3:15
 Video: replace weak assertions with exact values, add boundary tests (99.99 / 100 / 100.01).
 The boundary test at exactly 100 FAILS. Spec says "100 or more ships free", code says ">". That's the real bug.
 -->
@@ -383,6 +448,7 @@ layout: center
 <div class="muted mt-6">the bug lived on a 100% covered line</div>
 
 <!--
+⏱ 1:00
 This is the punchline of the demo. Stryker didn't find the bug directly. It showed that no test cared about the boundary. The moment we wrote one, the bug fell out. Customers with exactly 100 in the cart paid 5.99 shipping.
 -->
 
@@ -394,6 +460,11 @@ layout: center
 
 <div class="muted mt-6">one survivor left. and it's unkillable.</div>
 
+<!--
+⏱ 0:20
+Cliffhanger: one survivor left and no test can kill it. Next section explains why.
+-->
+
 ---
 layout: center
 ---
@@ -403,6 +474,8 @@ layout: center
 <div class="muted">reading results · equivalent mutants · run times</div>
 
 <!--
+⏱ 0:15
+§ 5 · Making it practical
 Agenda point 5. The usual objections: "too noisy", "too slow". Let's talk about both.
 -->
 
@@ -431,6 +504,7 @@ return roundMoney(amount - coupon.value);
 </div>
 
 <!--
+⏱ 1:00
 An equivalent mutant changes the code but not the behaviour. No test can ever kill it. When value === amount both paths return 0.
 -->
 
@@ -454,6 +528,11 @@ layout: center
 
 </v-clicks>
 
+<!--
+⏱ 1:00
+Three options. Refactor first: an equivalent mutant often points at redundant code. If you ignore it, the disable comment needs a reason, and it switches off every mutant of that kind on the line (here also the killable "<"). And accept less than 100%: chasing 100% mutation score is the same trap as chasing 100% coverage.
+-->
+
 ---
 layout: center
 ---
@@ -461,6 +540,7 @@ layout: center
 <Meme src="one-does-not-simply.jpg" top="one does not simply" bottom="run all mutants on every PR" width="38rem" />
 
 <!--
+⏱ 0:20
 Cost: every mutant can mean a test run. 5,000 mutants × a 2 minute suite is your weekend.
 -->
 
@@ -483,6 +563,7 @@ layout: center
 ```
 
 <!--
+⏱ 1:15
 Biggest wins in order: perTest coverage analysis (default with vitest runner), incremental mode, scoping mutate, then the checker.
 -->
 
@@ -492,9 +573,10 @@ layout: center
 
 # Demo 4: go fast
 
-<Clip src="step-4-fast.mp4" tag="step-4-fast" />
+<Clip src="demo-4-fast.mp4" tag="step-4-fast" />
 
 <!--
+⏱ 2:15
 Video: incremental run reuses 48 of 50 results in ~1 s. TS checker marks 13 mutants as compile errors, they never hit the test runner.
 -->
 
@@ -522,6 +604,7 @@ layout: center
 </div>
 
 <!--
+⏱ 1:15
 Real gotcha we hit while building the demo: Stryker core reads tsconfig via the TS JS API. With only TS 7 installed you get "ts.parseConfigFileTextToJson is not a function". Fix: TS 6 as "typescript" for tools, TS 7 under the @typescript/native alias.
 -->
 
@@ -542,6 +625,7 @@ layout: center
 <div v-click class="big mt-6">it depends™</div>
 
 <!--
+⏱ 1:00
 Synthetic workload: the demo cloned N times. Fast unit tests, so the checker can't save much test time here; with slow tests it saves more. TS 6 checker has startup cost, TS 7 native is close to free. Native checks mutants one by one, no grouping yet, watch it at large mutant counts.
 -->
 
@@ -554,6 +638,8 @@ layout: center
 <div class="muted">mutation testing is not free</div>
 
 <!--
+⏱ 0:15
+§ 5 · The fine print
 I promised honesty. Here is what it costs.
 -->
 
@@ -574,6 +660,7 @@ layout: center
 </v-clicks>
 
 <!--
+⏱ 0:45
 Every mutant is potentially a full test run. Stryker is smart (only tests covering the mutant, incremental reuse), but the cost grows with code size times test time.
 -->
 
@@ -592,6 +679,7 @@ layout: center
 <div class="muted mt-4">same commit, same config · <code>.github/workflows/bench.yml</code></div>
 
 <!--
+⏱ 0:45
 Hosted runners have few cores, so concurrency drops and wall time grows. Plus npm ci and sandbox copy on every run. Options: incremental on PRs, full run nightly, larger runners if you can pay, or scope mutate to what changed.
 -->
 
@@ -612,6 +700,7 @@ layout: center
 </v-clicks>
 
 <!--
+⏱ 1:00
 Stryker's incremental mode needs the previous result. On a laptop it's just a file; on GitHub runners every job starts empty, so it goes into actions/cache.
 Restore order: this branch's last run, then main's. That's why main must run on every merge (and nightly, to stay inside the 7-day eviction window).
 Incremental only diffs your source and tests. Bump vitest or change stryker.config.json and it won't notice: the nightly run uses --force.
@@ -639,6 +728,7 @@ layout: center
 | `restore` + `save` with `if: always()` | **57 / 59** |
 
 <!--
+⏱ 1:00
 Measured on demo PR #2. With plain actions/cache the save step is skipped when the job fails, so every push to a failing PR re-tests all of its changes from main's baseline. The failing PR is exactly the one you iterate on.
 On a re-run with the same commit you'll see "Failed to save: Unable to reserve cache": harmless warning, the key already exists.
 -->
@@ -666,6 +756,7 @@ export const CouponInput = z.object({
 </v-clicks>
 
 <!--
+⏱ 1:00
 Static code runs at import time, so per-test coverage can't tell which test depends on it. Stryker has to rerun the whole suite per static mutant. ignoreStatic trades that time for a blind spot.
 And here's the catch: a Zod schema is exactly that kind of code. All your validation rules live at module level.
 -->
@@ -679,6 +770,7 @@ layout: center
 <div class="muted mt-6">Zod schema mutants silently ignored with <code>ignoreStatic: true</code></div>
 
 <!--
+⏱ 0:30
 Measured on the demo coupon schema: 28 mutants, 18 ignored as static, 8 tested, 2 compile errors. Only the .refine() callback runs at parse time, so only its mutants were tested. Every other rule: regex, enum, limits, messages, ignored. Stryker still showed a nice green overall score.
 -->
 
@@ -702,6 +794,7 @@ layout: center
 <div v-click class="muted mt-4">not mutated: <code>1000</code>, <code>{3,20}</code>, <code>.positive()</code>, <code>.default(0)</code>, <code>.coerce</code> → test those anyway</div>
 
 <!--
+⏱ 1:00
 Stryker's mutators are syntactic: method names it knows (min/max, toUpperCase/toLowerCase, trim), regexes, arrays, strings, objects. It doesn't know Zod, so numbers, .positive(), .default() and .coerce never get mutated. No surviving mutant there doesn't mean those rules are tested.
 -->
 
@@ -729,19 +822,8 @@ export default { ...base, mutate: ['src/**/*-schema.ts'], ignoreStatic: false };
 </div>
 
 <!--
+⏱ 1:00
 The remaining mutants are compile errors (the TypeScript checker throws them out). Here the cost is 0.3 s. With a 3-minute suite, each static mutant costs 3 minutes, so measure before you flip it in a big repo. What the demo does: the main config keeps ignoreStatic true and excludes "!src/**/*-schema.ts"; stryker.schemas.config.mjs mutates only the schemas with ignoreStatic false and a 90% break. CI runs both and merges them into one PR comment. Fast default, strict where the rules live.
--->
-
----
-layout: center
----
-
-# Demo 7: Zod
-
-<Clip src="step-7-zod.mp4" tag="main (PRs #5–#6)" />
-
-<!--
-Video: PR #5, agent tests, "18 mutants ignored (static)", 50% on changed lines. PR #6: tests for every rule + a separate schemas config (ignoreStatic false, break 90), all 23 testable schema mutants killed, main run stays fast.
 -->
 
 ---
@@ -761,6 +843,7 @@ layout: center
 </v-clicks>
 
 <!--
+⏱ 1:00
 The "missing code" one is important: mutation testing judges the tests against the code that exists. If the requirement isn't implemented at all, there is nothing to mutate. It complements thinking, it doesn't replace it.
 -->
 
@@ -773,6 +856,8 @@ layout: center
 <div class="muted">where to start · CI · thresholds</div>
 
 <!--
+⏱ 0:15
+§ 6 · Adopting it in your team
 Agenda point 6.
 -->
 
@@ -812,6 +897,7 @@ layout: center
 <div v-click class="mt-8 text-xl">mutate where a flipped <code>&gt;</code> costs money or a flipped <code>&amp;&amp;</code> lets someone in</div>
 
 <!--
+⏱ 1:30
 Rule of thumb: code where a small mistake is expensive, and where the logic branches.
 Left: an off-by-one in pricing is our free-shipping bug; && → || in an isAllowed check is a security hole that passes the happy-path tests; Zod schemas we just saw; status transitions and expiry dates are boundaries everywhere; a shared lib spreads one survivor to every team; agent code because the tests were written to pass.
 Right: UI markup mutants change strings and class names and the tests that kill them are brittle snapshots; glue code has no logic, integration tests cover it; nobody should write tests for log messages; generated code isn't yours; wrappers test your mocks; slow/flaky suites cost more than they tell you, fix them first.
@@ -833,6 +919,11 @@ layout: center
 
 </v-clicks>
 
+<!--
+⏱ 1:00
+Concrete starting plan: one module that matters, run it locally, read the report, fix three survivors. Then CI in report-only mode (break: null), raise the bar slowly. Never as a vanity badge on the README... says the guy with a badge on his README.
+-->
+
 ---
 layout: center
 ---
@@ -851,6 +942,7 @@ layout: center
 | **lines changed in the PR** < 80% | ❌ CI fails |
 
 <!--
+⏱ 1:00
 Start with break low or null. The goal is the conversation in code review, not another number to game.
 The last row is the one I like most: legacy code can sit at 60%, but new code is held to 80%. The overall average can't hide a badly tested new feature. (Not a Stryker option: ci-samples/report.mjs computes it from the PR diff.)
 -->
@@ -861,9 +953,10 @@ layout: center
 
 # Demo 5: in CI
 
-<Clip src="step-5-ci.mp4" tag="step-5-ci" />
+<Clip src="demo-5-ci.mp4" tag="main (PRs #1–#2)" />
 
 <!--
+⏱ 2:45
 Video: PR #1 (weak tests) red with 45.71%, PR #2 (new feature) green overall 93% but red on changed lines 70%. Sticky comment, inline annotations on the diff, HTML report artifact.
 -->
 
@@ -883,8 +976,22 @@ layout: center
 </v-clicks>
 
 <!--
+⏱ 1:00
 Nobody downloads an HTML artifact from a CI run. People read PR comments and look at the diff. Put the survivors where the reviewer already is.
 All of this is ~200 lines in ci-samples/report.mjs, no paid service. Stryker Dashboard is the hosted alternative (free for open source).
+-->
+
+---
+layout: center
+---
+
+# Demo 6: Zod in a PR
+
+<Clip src="demo-6-zod.mp4" tag="main (PRs #5–#6)" />
+
+<!--
+⏱ 2:15
+Video: PR #5, agent tests, "18 mutants ignored (static)", 50% on changed lines. PR #6: tests for every rule + a separate schemas config (ignoreStatic false, break 90), all 23 testable schema mutants killed, main run stays fast.
 -->
 
 ---
@@ -896,6 +1003,11 @@ layout: center
   { text: 'mutation score: 80%', x: 52, y: 70, w: 46, size: '1.5rem', dark: true },
 ]" />
 
+<!--
+⏱ 0:15
+The whole CI section in one picture. Two seconds, move on.
+-->
+
 ---
 layout: center
 ---
@@ -905,6 +1017,8 @@ layout: center
 <div class="muted">and who tests the agent's tests?</div>
 
 <!--
+⏱ 0:30
+§ AI agents write the tests now
 Section on AI. My workflow: agents write a lot of code and tests, and I use Stryker to check whether those tests are good enough to give me confidence. (Add your own example: which agent, what kind of project.)
 -->
 
@@ -917,6 +1031,7 @@ layout: center
 <div v-click class="muted mt-8 text-2xl">that's not the same as testing.</div>
 
 <!--
+⏱ 0:45
 An agent optimises for the goal you give it. "Tests green, coverage 100%" is a goal it can reach without checking anything: weak assertions, snapshots of whatever the code returns today, mocking the very thing under test.
 Goodhart's law, now at 100 tokens per second.
 -->
@@ -938,6 +1053,7 @@ it('calculates the receipt correctly', () => {
 <div class="muted mt-4">great name. 100% coverage. tests nothing on day one.</div>
 
 <!--
+⏱ 0:45
 The test name is perfect, the reviewer skims it, LGTM. The snapshot freezes current behaviour, including the off-by-one bug we just found.
 -->
 
@@ -956,6 +1072,7 @@ flowchart LR
 ```
 
 <!--
+⏱ 1:00
 The loop I use: agent writes the change and the tests, Stryker runs, surviving mutants go back to the agent as a concrete to-do list. A human still reviews, but now the review starts from "the tests can catch these changes", not from hope.
 -->
 
@@ -977,21 +1094,24 @@ Write or improve tests so that each change makes at least one test fail.
 
 <div class="muted mt-4"><code>ci-samples/survivors-to-prompt.mjs</code> · uploaded as a CI artifact on every PR</div>
 
+<!--
+⏱ 0:45
+Far better than "write better tests". Concrete, checkable, small. The "don't touch src" rule matters: otherwise the agent "fixes" the mutant by changing the code until the test passes.
+-->
+
 ---
 layout: center
 ---
 
-# Demo 6: agents in the loop
+# Demo 7: agents in the loop
 
-<Clip src="step-6-agents.mp4" tag="main (PRs #2–#4)" />
+<Clip src="demo-7-agents.mp4" tag="main (PRs #2–#4)" />
 
 <!--
+⏱ 2:45
 Video: PR #2 agent-written tests, gate fails, download agent-prompt.md. PR #3: the agent "fixed" it with Stryker disable comments: score 100%, headline warns 8 ignored mutants, gate fails. PR #4: proper tests, 100% on changed lines, green.
 -->
 
-<!--
-Far better than "write better tests". Concrete, checkable, small. The "don't touch src" rule matters: otherwise the agent "fixes" the mutant by changing the code until the test passes.
--->
 
 ---
 layout: center
@@ -1009,6 +1129,7 @@ layout: center
 </v-clicks>
 
 <!--
+⏱ 1:00
 Common ways agents game it: adding Stryker disable comments, changing the implementation so their test passes, snapshot-testing a whole object. (Add your own war story here if you have one.) The PR workflow in the repo fails on disable comments without a reason and lists all new ones in the job summary.
 -->
 
@@ -1019,6 +1140,7 @@ layout: center
 <div class="big">Mutation score = trust signal for code you didn't write.</div>
 
 <!--
+⏱ 0:20
 One-line summary of the AI section. With agents writing more of the code, "the tests pass" is worth less every month. "The tests catch changes" is what I check.
 -->
 
@@ -1038,6 +1160,8 @@ layout: center
 </v-clicks>
 
 <!--
+⏱ 1:30
+§ 7 · Takeaways & Q&A
 Agenda point 7.
 -->
 
@@ -1052,6 +1176,7 @@ npm init stryker@latest
 ```
 
 <!--
+⏱ 0:30
 One command, answers a few questions (test runner, checker), writes the config. Then npx stryker run.
 -->
 
@@ -1079,6 +1204,7 @@ layout: center
 </div>
 
 <!--
+⏱ 0:30
 Leave this up for a few seconds, people need time to scan.
 -->
 
@@ -1099,3 +1225,8 @@ layout: end
 
 </div>
 </div>
+
+<!--
+⏱ 0:15
+Read questions from the chat. Repeat each question out loud before answering: it's recorded, and not everyone sees the chat. If the chat is quiet, seed it: "The question I always get: how long does this take on a real project?"
+-->

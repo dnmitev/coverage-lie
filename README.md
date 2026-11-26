@@ -38,7 +38,7 @@ npm run coverage      # 100%
 npx stryker run       # 58%
 ```
 
-`demo/scripts/RECORDING.md` has the step-by-step script used for the demo videos.
+`demo/scripts/RECORDING.md` has the step-by-step script for the seven demo videos, with target lengths and Zoom recording tips.
 
 ### TypeScript 7 note
 
@@ -158,7 +158,8 @@ The prompt tells the agent not to touch `src/` and not to add `Stryker disable` 
 cd slides && npm ci && npm run dev
 ```
 
-Slidev, DEV.BG branding. Meme templates go in `slides/public/memes/` (list in the README there), demo videos in `slides/public/videos/`.
+Slidev, DEV.BG branding. Presented on Zoom: interaction goes through the chat (poll + "spot the survivor" quiz).
+`slides/SPEAKER_GUIDE.md` lists every slide with its planned time and talking points; it is generated from the speaker notes (`npm run speaker-guide` after editing `slides.md`). Meme templates go in `slides/public/memes/` (list in the README there), demo videos in `slides/public/videos/`.
 
 ## License
 
