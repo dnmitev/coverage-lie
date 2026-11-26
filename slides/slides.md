@@ -252,6 +252,7 @@ layout: center
 
 # Quiz: which bug slips through? 🧟
 
+````md magic-move {at:2}
 ```ts
 // rule: you must be 18 or older
 const canBuyBeer = (age: number) => age >= 18;
@@ -261,6 +262,17 @@ it('checks age', () => {
   expect(canBuyBeer(5)).toBe(false);
 });
 ```
+```ts
+// rule: you must be 18 or older
+const canBuyBeer = (age: number) => age >= 18;
+
+it('checks age', () => {
+  expect(canBuyBeer(30)).toBe(true);
+  expect(canBuyBeer(5)).toBe(false);
+  expect(canBuyBeer(18)).toBe(true); // kills A
+});
+```
+````
 
 <div class="muted mt-4">Stryker breaks <code>age &gt;= 18</code> in four ways:</div>
 
@@ -273,7 +285,7 @@ it('checks age', () => {
 
 <div class="mt-4 text-lg">💬 Which bug would these tests <strong>NOT</strong> catch? A, B, C or D in the chat</div>
 
-<div v-click class="text-3xl font-extrabold mt-4">A. it's wrong only for age 18, and no test checks 18.</div>
+<div v-click="1" class="text-3xl font-extrabold mt-4">A. it's wrong only for age 18, and no test checks 18.</div>
 
 <!--
 ⏱ 1:30
@@ -284,7 +296,7 @@ Give them 20-30 seconds, Zoom chat is slow. Read a few answers. Then reveal and 
 - D (false): 30 gives false → caught.
 - A (age > 18): 30 → true, 5 → false. Same answers as the correct code, all tests pass, bug not caught: it "survived". The only age where > and >= differ is exactly 18, and nobody tested 18. 100% coverage, and an 18-year-old can't buy a beer.
 Vocabulary to land: killed = the tests caught the bug (good). Survived = the bug got through (bad, for your tests).
-Fix: expect(canBuyBeer(18)).toBe(true). Correct code passes, mutant A fails → killed.
+Click again: the fix test slides into the code. expect(canBuyBeer(18)).toBe(true): correct code returns true → passes; mutant A returns false → fails → killed.
 This is the whole talk in one slide; the demo is the same bug with free shipping at exactly 100.
 -->
 ---
