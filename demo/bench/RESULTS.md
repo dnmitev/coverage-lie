@@ -24,3 +24,16 @@ Workload: the demo's src + tests cloned N times (synthetic, for scale only).
 - The TS 7 native checker starts almost instantly, but checks mutants one by one.
   At 2,000 mutants that makes it slower than TS 6. Grouping is tracked upstream.
 - 0 survivors in every scenario: the checker only moves mutants into "CompileError" before tests run.
+
+## Same benchmark on a GitHub-hosted runner
+
+`ubuntu-latest` (ubuntu-26.04, 4 vCPU), run via `.github/workflows/bench.yml` with copies `1 10` on 2026-11-26.
+
+| Copies | Mutants | Scenario | Laptop (M1 Max) | GitHub runner |
+|---|---|---|---|---|
+| 1 | 50 | no checker | 3.0 s | 4.7 s |
+| 1 | 50 | TS 6 checker | 15.0 s | 20.5 s |
+| 1 | 50 | TS 7 native checker | 3.0 s | 4.7 s |
+| 10 | 500 | no checker | 11.6 s | 21.1 s |
+| 10 | 500 | TS 6 checker | 18.1 s | 30.5 s |
+| 10 | 500 | TS 7 native checker | 11.2 s | 20.9 s |

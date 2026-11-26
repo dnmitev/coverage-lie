@@ -109,4 +109,5 @@ Expected numbers below come from real runs (Node 26, macOS). Your timings will d
    - `Tests` workflow: ✅ green, 100% coverage.
    - `Mutation testing (PR)`: ❌ red, `Final mutation score 45.71 under breaking threshold 50`.
    - Open the job summary table and download the `mutation-report` artifact.
+   - Open `agent-prompt.md` from the artifact: the surviving mutants as a ready-made prompt for a coding agent.
 4. Punchline: "Same PR. Coverage says ship it. Stryker says no."

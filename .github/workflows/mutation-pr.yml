@@ -21,6 +21,8 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0 # needed to diff against the base branch
       - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
@@ -37,6 +39,21 @@ jobs:
             stryker-incremental-${{ github.head_ref }}-
             stryker-incremental-main-
 
+      # Agents (and humans) like to silence what they can't fix.
+      # New disable comments are listed for review; one without a reason fails the job.
+      - name: Check new Stryker disable comments
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          added=$(git diff "origin/$BASE_REF...HEAD" -U0 -- . | grep -E '^\+.*Stryker disable' || true)
+          if [ -n "$added" ]; then
+            { echo '## New Stryker disable comments, please review'; echo '```'; echo "$added"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          fi
+          if printf '%s\n' "$added" | grep -E 'Stryker disable' | grep -vqE 'Stryker (disable|restore)[a-z-]* [^:]+: .+'; then
+            echo '::error::Stryker disable comment without a reason'
+            exit 1
+          fi
+
       # Fails the job when the score drops below thresholds.break (stryker.config.json).
       - run: npx stryker run
 
@@ -44,9 +61,16 @@ jobs:
         if: always()
         run: node ../ci-samples/score-summary.mjs reports/mutation/mutation.json >> "$GITHUB_STEP_SUMMARY"
 
+      # Ready-made prompt for a coding agent: "write tests that kill these mutants".
+      - name: Survivors as agent prompt
+        if: always()
+        run: node ../ci-samples/survivors-to-prompt.mjs reports/mutation/mutation.json > reports/mutation/agent-prompt.md
+
       - name: Upload HTML report
         if: always()
         uses: actions/upload-artifact@v7
         with:
           name: mutation-report
-          path: demo/reports/mutation/mutation.html
+          path: |
+            demo/reports/mutation/mutation.html
+            demo/reports/mutation/agent-prompt.md

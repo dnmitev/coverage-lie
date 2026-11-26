@@ -30,7 +30,7 @@ layout: center
 
 # Dimitar Mitev
 
-<div class="text-xl mt-2"><!-- TODO: position / company --></div>
+<div class="text-xl mt-2">Solutions Architect</div>
 
 <div class="muted mt-6 text-lg">writes tests. sometimes they even assert something.</div>
 
@@ -130,6 +130,7 @@ expect(typeof isCouponValid(c, 100, now)).toBe('boolean'); // 🤡
 
 <!--
 Four patterns everyone has written (me too). All of them push coverage up, none of them pin down behaviour. Point at the typeof boolean one, wait for laughs.
+Then: "Ask a coding agent to get coverage to 100% and this is exactly what you get back. Fast." Plant the seed, we come back to agents after the demo.
 -->
 
 ---
@@ -475,6 +476,99 @@ Synthetic workload: the demo cloned N times. Fast unit tests, so the checker can
 layout: center
 ---
 
+# The fine print 🧾
+
+<div class="muted">mutation testing is not free</div>
+
+<!--
+I promised honesty. Here is what it costs.
+-->
+
+---
+layout: center
+---
+
+# It's slow. By design.
+
+<div class="big mt-4">mutants × tests</div>
+
+<v-clicks>
+
+- demo: 50 mutants × 18 tests (5 ms) → **2 s**
+- real service: 5,000 mutants × a 3-minute suite → **your weekend**
+- perTest coverage + incremental make it bearable, not free
+
+</v-clicks>
+
+<!--
+Every mutant is potentially a full test run. Stryker is smart (only tests covering the mutant, incremental reuse), but the cost grows with code size times test time.
+-->
+
+---
+layout: center
+---
+
+# Even slower in CI
+
+| | laptop (M1 Max, 10 cores) | GitHub `ubuntu-latest` (4 vCPU) |
+|---|---|---|
+| 50 mutants | 2 s | 6 s |
+| 500 mutants (bench) | 11.6 s | 21.1 s |
+| 500 mutants + TS 6 checker | 18.1 s | 30.5 s |
+
+<div class="muted mt-4">same commit, same config · <code>.github/workflows/bench.yml</code></div>
+
+<!--
+Hosted runners have few cores, so concurrency drops and wall time grows. Plus npm ci and sandbox copy on every run. Options: incremental on PRs, full run nightly, larger runners if you can pay, or scope mutate to what changed.
+-->
+
+---
+layout: center
+---
+
+# Static mutants
+
+```ts
+// runs once, when the module loads
+export const FREE_SHIPPING_COUNTRIES = ['BG', 'RO', 'GR'];
+```
+
+<v-clicks>
+
+- no single test "covers" it → Stryker runs **all** tests for each one
+- `ignoreStatic: true` → skipped... and never checked
+- worth it for config tables? usually not. for business rules? maybe.
+
+</v-clicks>
+
+<!--
+Static code runs at import time, so per-test coverage can't tell which test depends on it. Stryker has to rerun the whole suite per static mutant, and that can be the majority of your run time. ignoreStatic trades that time for a blind spot. Decide per project.
+-->
+
+---
+layout: center
+---
+
+# More fine print
+
+<v-clicks>
+
+- **equivalent mutants**: a human has to decide, every time
+- **flaky tests**: random kills and timeouts, noisy scores
+- **missing code**: no mutant for the check you never wrote
+- **gameable**: snapshots kill mutants without verifying intent
+- **setup**: monorepos, sandboxes, TS 7 checker still experimental
+
+</v-clicks>
+
+<!--
+The "missing code" one is important: mutation testing judges the tests against the code that exists. If the requirement isn't implemented at all, there is nothing to mutate. It complements thinking, it doesn't replace it.
+-->
+
+---
+layout: center
+---
+
 # Adopting it in your team
 
 <div class="muted">where to start · CI · thresholds</div>
@@ -544,13 +638,128 @@ layout: center
 layout: center
 ---
 
+# Agents write the tests now
+
+<div class="muted">and who tests the agent's tests?</div>
+
+<!--
+Section on AI. My workflow: agents write a lot of code and tests, and I use Stryker to check whether those tests are good enough to give me confidence. (Add your own example: which agent, what kind of project.)
+-->
+
+---
+layout: center
+---
+
+<div class="big">Agents are <strong>really</strong> good at making tests pass.</div>
+
+<div v-click class="muted mt-8 text-2xl">that's not the same as testing.</div>
+
+<!--
+An agent optimises for the goal you give it. "Tests green, coverage 100%" is a goal it can reach without checking anything: weak assertions, snapshots of whatever the code returns today, mocking the very thing under test.
+Goodhart's law, now at 100 tokens per second.
+-->
+
+---
+layout: center
+---
+
+# Typical agent-written test
+
+```ts
+it('calculates the receipt correctly', () => {
+  const receipt = checkout(items, coupon, now);
+  expect(receipt).toMatchSnapshot();   // whatever it returns today is "correct"
+  expect(receipt.total).toBeDefined();
+});
+```
+
+<div class="muted mt-4">great name. 100% coverage. tests nothing on day one.</div>
+
+<!--
+The test name is perfect, the reviewer skims it, LGTM. The snapshot freezes current behaviour, including the off-by-one bug we just found.
+-->
+
+---
+layout: center
+---
+
+# Stryker as the agent's reviewer
+
+```mermaid {scale: 0.85}
+flowchart LR
+  A[agent writes code + tests] --> B[npx stryker run]
+  B -->|survivors| C[survivors → prompt]
+  C --> A
+  B -->|score ≥ bar| D[human review]
+```
+
+<!--
+The loop I use: agent writes the change and the tests, Stryker runs, surviving mutants go back to the agent as a concrete to-do list. A human still reviews, but now the review starts from "the tests can catch these changes", not from hope.
+-->
+
+---
+layout: center
+---
+
+# Survivors as a prompt
+
+```md
+Write or improve tests so that each change makes at least one test fail.
+- Do not change anything under src/. If a test reveals a bug, stop and report it.
+- Do not add "Stryker disable" comments.
+
+- `src/cart.ts:26` EqualityOperator (Survived)
+  - original: `return amount >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;`
+  - mutated:  `return amount > FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FEE;`
+```
+
+<div class="muted mt-4"><code>ci-samples/survivors-to-prompt.mjs</code> · uploaded as a CI artifact on every PR</div>
+
+<!--
+Far better than "write better tests". Concrete, checkable, small. The "don't touch src" rule matters: otherwise the agent "fixes" the mutant by changing the code until the test passes.
+-->
+
+---
+layout: center
+---
+
+# Agents game metrics too
+
+<v-clicks>
+
+- `// Stryker disable all` → **CI fails** without a reason, every new disable listed for review
+- snapshot everything → kills mutants, verifies nothing
+- edits `src/` to make tests pass → keep test tasks test-only
+- score is a **signal** for review, not a target
+
+</v-clicks>
+
+<!--
+Common ways agents game it: adding Stryker disable comments, changing the implementation so their test passes, snapshot-testing a whole object. (Add your own war story here if you have one.) The PR workflow in the repo fails on disable comments without a reason and lists all new ones in the job summary.
+-->
+
+---
+layout: center
+---
+
+<div class="big">Mutation score = trust signal for code you didn't write.</div>
+
+<!--
+One-line summary of the AI section. With agents writing more of the code, "the tests pass" is worth less every month. "The tests catch changes" is what I check.
+-->
+
+---
+layout: center
+---
+
 # Takeaways
 
 <v-clicks>
 
 1. Coverage = code **ran**. Mutation score = code is **checked**.
 2. A surviving mutant is a bug report waiting to happen.
-3. Start small, incremental in CI, don't make it a vanity metric.
+3. Agents write tests fast. Stryker tells you if you can trust them.
+4. It's slow and has blind spots. Start small, incremental in CI, never a vanity metric.
 
 </v-clicks>
 
