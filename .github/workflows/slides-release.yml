@@ -1,0 +1,60 @@
+# Every change to the slides publishes a new GitHub Release with PDF and PPTX downloads.
+# Stable links to the newest version:
+#   https://github.com/<owner>/<repo>/releases/latest/download/coverage-lie.pdf
+#   https://github.com/<owner>/<repo>/releases/latest/download/coverage-lie.pptx
+name: Slides release
+
+on:
+  push:
+    branches: [main]
+    paths: ['slides/**']
+  workflow_dispatch:
+
+permissions:
+  contents: write # create releases
+
+concurrency:
+  group: slides-release
+  cancel-in-progress: false # every change gets its own version
+
+defaults:
+  run:
+    working-directory: slides
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: slides/package-lock.json
+      - run: npm ci
+
+      # Headless Chromium for the export; the emoji font so 🧟 💬 don't render as boxes.
+      - name: Install Chromium and fonts
+        run: |
+          npx playwright install --with-deps chromium
+          sudo apt-get install -y --no-install-recommends fonts-noto-color-emoji
+
+      - run: npm run export:pdf
+      - run: npm run export:pptx
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="slides-v${GITHUB_RUN_NUMBER}"
+          subject=$(git log -1 --format=%s)
+          gh release create "$tag" exports/coverage-lie.pdf exports/coverage-lie.pptx \
+            --target "$GITHUB_SHA" --latest \
+            --title "Slides v${GITHUB_RUN_NUMBER} ($(date -u +%Y-%m-%d))" \
+            --notes "Exported from ${GITHUB_SHA::7}: ${subject}
+
+          - **PDF**: one page per slide, final state of every click
+          - **PPTX**: one image per slide with the speaker notes; not editable
+
+          Live version: https://dnmitev.github.io/coverage-lie/"

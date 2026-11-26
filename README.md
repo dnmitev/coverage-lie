@@ -5,6 +5,7 @@
 Finding hidden bugs with mutation testing. Talk + demo for [DEV.BG JavaScript](https://dev.bg/groups/javascript/), 28.01.2027.
 
 **Slides:** https://dnmitev.github.io/coverage-lie/ · **Live mutation report (main):** https://dnmitev.github.io/coverage-lie/mutation/
+**Download:** [PDF](https://github.com/dnmitev/coverage-lie/releases/latest/download/coverage-lie.pdf) · [PPTX](https://github.com/dnmitev/coverage-lie/releases/latest/download/coverage-lie.pptx) (always the newest version, see [releases](https://github.com/dnmitev/coverage-lie/releases))
 
 > Coverage tells you which code **ran**. Mutation testing tells you which code is **checked**.
 
@@ -64,6 +65,7 @@ Is the native checker faster? Depends on mutant count, see `demo/bench/RESULTS.m
 | `.github/workflows/mutation-main.yml` | full run on `main` + nightly (`--force`), refreshes the incremental cache and the baseline JSON for PRs |
 | `.github/workflows/pages.yml` | slides + live HTML mutation report + badge on GitHub Pages |
 | `.github/workflows/bench.yml` | manual: checker benchmark on a GitHub-hosted runner |
+| `.github/workflows/slides-release.yml` | every slides change: export PDF + PPTX and publish a GitHub Release |
 | `ci-samples/report.mjs` | Markdown report, annotations, badge and gates from Stryker's JSON report |
 | `ci-samples/survivors-to-prompt.mjs` | surviving mutants as a prompt for a coding agent |
 
@@ -156,6 +158,8 @@ The prompt tells the agent not to touch `src/` and not to add `Stryker disable` 
 
 ```bash
 cd slides && npm ci && npm run dev
+npm run export:pdf    # exports/coverage-lie.pdf  (needs: npx playwright install chromium)
+npm run export:pptx   # exports/coverage-lie.pptx (image per slide + speaker notes)
 ```
 
 Slidev, DEV.BG branding. Presented on Zoom: interaction goes through the chat (poll + "spot the survivor" quiz).

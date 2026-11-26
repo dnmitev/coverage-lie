@@ -5,11 +5,13 @@
   "scripts": {
     "dev": "slidev --open",
     "build": "slidev build",
-    "export": "slidev export --dark",
-    "speaker-guide": "node speaker-guide.mjs"
+    "speaker-guide": "node speaker-guide.mjs",
+    "export:pdf": "slidev export --with-clicks false --output exports/coverage-lie.pdf",
+    "export:pptx": "slidev export --format pptx --with-clicks false --scale 2 --output exports/coverage-lie.pptx"
   },
   "devDependencies": {
     "@slidev/cli": "53.1.0",
-    "@slidev/theme-default": "0.25.0"
+    "@slidev/theme-default": "0.25.0",
+    "playwright-chromium": "1.65.1"
   }
 }

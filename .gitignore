@@ -9,3 +9,4 @@ projects/
 .claude/
 # private speaker guide (generated locally: npm run speaker-guide)
 slides/SPEAKER_GUIDE.md
+exports/
