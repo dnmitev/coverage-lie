@@ -58,9 +58,33 @@ Is the native checker faster? Depends on mutant count, see `demo/bench/RESULTS.m
 | Workflow | What |
 |---|---|
 | `.github/workflows/tests.yml` | typecheck + tests + 100% coverage gate |
-| `.github/workflows/mutation-pr.yml` | incremental Stryker run on PRs, baseline from `main`, score in job summary, HTML report artifact, fails under `thresholds.break` |
+| `.github/workflows/mutation-pr.yml` | incremental Stryker run on PRs, baseline from `main`, score in job summary, HTML report + agent prompt as artifact, fails under `thresholds.break` or on a new `Stryker disable` comment without a reason |
 | `.github/workflows/mutation-main.yml` | refreshes the baseline on `main`, nightly full run (`--force`) |
+| `.github/workflows/bench.yml` | manual: run the checker benchmark on a GitHub-hosted runner |
 | `ci-samples/score-summary.mjs` | mutation score markdown from Stryker's JSON report |
+| `ci-samples/survivors-to-prompt.mjs` | surviving mutants as a prompt for a coding agent ("write tests that kill these") |
+
+## Mutation testing for agent-written tests
+
+When an agent writes the tests, "they pass" and "100% coverage" say very little: agents are good at reaching exactly those goals.
+Stryker answers the question that matters: would these tests notice if the code were wrong?
+
+```bash
+npx stryker run
+node ../ci-samples/survivors-to-prompt.mjs reports/mutation/mutation.json > prompt.md
+# hand prompt.md to the agent, run Stryker again, repeat
+```
+
+The prompt tells the agent not to touch `src/` and not to add `Stryker disable` comments; the PR workflow enforces the second rule.
+
+## Drawbacks (honestly)
+
+- Slow: cost is roughly mutants × test time. Even slower on hosted CI runners (see `demo/bench/RESULTS.md`: 500 mutants 11.6 s on a laptop, 21.1 s on `ubuntu-latest`).
+- Static mutants (module-level code) need the whole suite per mutant; `ignoreStatic` skips them but then they are never checked.
+- Equivalent mutants need a human decision.
+- Flaky tests make scores noisy.
+- It only judges tests against code that exists: a missing check has no mutant.
+- The score can be gamed (snapshots, disable comments), by people and by agents.
 
 ## Slides
 

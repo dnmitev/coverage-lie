@@ -1,0 +1,28 @@
+# Manual: run the checker benchmark on a GitHub-hosted runner, to compare with a laptop.
+name: Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      copies:
+        description: 'Space-separated copy counts (50 mutants per copy)'
+        default: '1 10'
+
+defaults:
+  run:
+    working-directory: demo
+
+jobs:
+  bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+          cache-dependency-path: demo/package-lock.json
+      - run: npm ci
+      - run: nproc && node bench/run.mjs ${{ inputs.copies }}
+      - run: cat bench/RESULTS.md >> "$GITHUB_STEP_SUMMARY"

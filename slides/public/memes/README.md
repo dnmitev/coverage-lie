@@ -12,4 +12,4 @@ Until a file exists, the slide shows a placeholder with the expected file name.
 | `one-does-not-simply.jpg` | One Does Not Simply | running all mutants on every PR |
 | `drake.jpg` | Drake Hotline Bling (2 panels) | coverage vs mutation score |
 
-Blank templates are available on imgflip.com (search the template name, use the blank version).
+Blank templates downloaded from imgflip.com (resized to max 1000 px).
