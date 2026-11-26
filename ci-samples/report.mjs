@@ -133,7 +133,8 @@ function markdown() {
   const deltaText = delta === undefined ? '' : ` (${delta >= 0 ? '+' : ''}${delta.toFixed(2)} vs main)`;
   const out = [];
   out.push('<!-- stryker-report -->');
-  out.push(`## ${icon(total.score)} Mutation score: ${fmt(total.score)}${deltaText}`, '');
+  const silenced = changedStats.ignored ? ` · ⚠️ ${changedStats.ignored} mutant(s) ignored on lines changed in this PR` : '';
+  out.push(`## ${icon(total.score)} Mutation score: ${fmt(total.score)}${deltaText}${silenced}`, '');
 
   out.push('| | Score | Killed | Survived | No coverage | Ignored |', '|---|---|---|---|---|---|');
   if (changedLines) {
