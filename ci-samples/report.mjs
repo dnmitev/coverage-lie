@@ -70,12 +70,16 @@ function allMutants(r) {
   });
 }
 
+function isStaticIgnored(m) {
+  return m.status === 'Ignored' && /static mutant/i.test(m.statusReason ?? '');
+}
+
 // Same formula as Stryker: detected / valid. Compile errors and ignored mutants don't count.
 function stats(list) {
   const n = (s) => list.filter((m) => m.status === s).length;
   const detected = n('Killed') + n('Timeout');
   const valid = detected + n('Survived') + n('NoCoverage');
-  return { score: valid ? (detected / valid) * 100 : undefined, killed: n('Killed'), timeout: n('Timeout'), survived: n('Survived'), noCoverage: n('NoCoverage'), ignored: n('Ignored'), valid };
+  return { score: valid ? (detected / valid) * 100 : undefined, killed: n('Killed'), timeout: n('Timeout'), survived: n('Survived'), noCoverage: n('NoCoverage'), ignored: n('Ignored'), ignoredStatic: list.filter(isStaticIgnored).length, valid };
 }
 
 // Lines added/changed since `base` (paths relative to cwd, like the report): file -> Set(line), plus the added text.
@@ -133,7 +137,9 @@ function markdown() {
   const deltaText = delta === undefined ? '' : ` (${delta >= 0 ? '+' : ''}${delta.toFixed(2)} vs main)`;
   const out = [];
   out.push('<!-- stryker-report -->');
-  const silenced = changedStats.ignored ? ` · ⚠️ ${changedStats.ignored} mutant(s) ignored on lines changed in this PR` : '';
+  const disabled = changedStats.ignored - changedStats.ignoredStatic;
+  const why = [disabled && `${disabled} by disable comments`, changedStats.ignoredStatic && `${changedStats.ignoredStatic} static, "ignoreStatic" is on`].filter(Boolean).join(', ');
+  const silenced = changedStats.ignored ? ` · ⚠️ ${changedStats.ignored} mutant(s) ignored on lines changed in this PR (${why})` : '';
   out.push(`## ${icon(total.score)} Mutation score: ${fmt(total.score)}${deltaText}${silenced}`, '');
 
   out.push('| | Score | Killed | Survived | No coverage | Ignored |', '|---|---|---|---|---|---|');
