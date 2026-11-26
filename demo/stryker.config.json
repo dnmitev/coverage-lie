@@ -18,7 +18,7 @@
     "experimentalNativePreview": true
   },
   "incremental": true,
-  "ignoreStatic": true,
+  "ignoreStatic": false,
   "concurrency": 4,
   "thresholds": {
     "high": 80,
